@@ -37,26 +37,36 @@
                 }
                 let localCopy = fr.result;
                 let randoVersion = ""
+                let pos = 0;
+                let endpos = 0;
 
-                let pos = localCopy.search("Location List");
-                if (pos == -1){
+                if (localCopy.search("\":seed_url\":") != -1){
+                    randoVersion = "OOTR";
                     pos = localCopy.search("\"locations");
-                    randoVersion = "OOTSHIP";
-                    
+                    endpos = localCopy.search("skipped_locations");
+                    console.log(endpos);
+                    localCopy = localCopy.slice(pos, endpos);
                 }
-                else{
+                else if(localCopy.search("Location List") != -1){
                     randoVersion = "OOTMM";
+                    pos = localCopy.search("Location List");
+                    localCopy = localCopy.slice(pos)
                 }
+                else if(localCopy.search("\"locations") != -1){
+                    randoVersion = "OOTSHIP";
+                    pos = localCopy.search("\"locations");
+                    localCopy = localCopy.slice(pos)
+                }
+
 
                 document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`
 
                 console.log(randoVersion);
-                localCopy = localCopy.substr(pos)
                 let locationArray = [];
                 let itemArray = [];
 
                 localCopy.split('\n').forEach(line => {
-                    const splitedLine = line.split(':');
+                    const splitedLine = line.split(/:(.*)/s);
                     if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
                         //console.log(splitedLine[0].trim());
                         locationArray.push(splitedLine[0]);
@@ -65,7 +75,7 @@
                     
                 })
 
-                if (randoVersion == "OOTSHIP"){
+                if (randoVersion == "OOTSHIP" || randoVersion == "OOTR"){
                     locationArray = sanitizeList(locationArray);
                     itemArray = sanitizeList(itemArray);
                 }
@@ -90,11 +100,40 @@
                     newCell2.setAttribute("class", "items");
                     newCell2.setAttribute("id", "item"+i);
 
-                    if (randoVersion == "OOTSHIP"){
-                        if(locationArray[i] == "REMOVE"){
+                    if(locationArray[i] == "REMOVE"){
                             appendBinary = false;
                         }
 
+                    if(randoVersion == "OOTR"){
+                        if(itemArray[i] === undefined || itemArray[i] == ""){
+                            newCell1.innerHTML = locationArray[i];
+                        }
+
+                        if (locationArray[i].includes("locations")){
+                            locationArray[i] = locationArray[i].charAt(0).toUpperCase() + locationArray[i].slice(1);
+                            newCell1.innerHTML = locationArray[i];
+                            newCell1.setAttribute("class", "locationHeader");
+                        }
+                        else if(appendBinary){
+                            newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
+                        } 
+
+                        if(itemArray[i].includes("item:")){
+                            //let y = itemArray[i].split(" ");
+                            //itemArray[i] = y[1];
+                            lengthx = 0;
+                            if(itemArray[i].includes("price:")){
+                                lengthx = itemArray[i].indexOf("price:") - itemArray[i].indexOf("item:") - 6;
+                            }
+                            if(itemArray[i].includes("model:")){
+                                lengthx = itemArray[i].indexOf("model:") - itemArray[i].indexOf("item:") - 6;
+                            }
+
+                            itemArray[i] = itemArray[i].substr(5, lengthx);
+                        }
+                    }
+
+                    if (randoVersion == "OOTSHIP"){
                         if (locationArray[i] == "item"){
                             if (itemArray[i].includes("Ice Trap")){
                                 document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>Ice Trap</p></a>`;
@@ -154,11 +193,8 @@
                         document.getElementById("row"+i).remove();
 
                     }
-
                 }
-
             }
-
             fr.readAsText(this.files[0]);
         })
 
@@ -177,8 +213,6 @@
 
         function revealAll(){
             let x = document.getElementsByClassName("items");
-            //console.log(x.length)
-            
             while(x.item(0) != undefined){
                 x.item(0).classList.add("itemsRevealed");
                 x.item(0).classList.remove("items");
@@ -186,9 +220,7 @@
         }
 
         function hideAll(){
-            let x = document.getElementsByClassName("itemsRevealed");
-            //console.log(x.length)
-            
+            let x = document.getElementsByClassName("itemsRevealed");        
             while(x.item(0) != undefined){
                 x.item(0).classList.add("items");
                 x.item(0).classList.remove("itemsRevealed");
@@ -196,23 +228,13 @@
         }
 
         function sanitizeList(listx){
+
             for(i=0; i<listx.length; i++){
-                //console.log(i);
+                //console.log(listx[i]);
                 if(listx[i] != undefined){
                     listx[i] = listx[i].trim();
 
-                    if(listx[i].includes(",")){
-                        listx[i] = listx[i].substr(0, listx[i].length - 1);
-                    }
-                    if(listx[i].includes("\"")){
-                        listx[i] = listx[i].substr(1, listx[i].length - 2);
-                    }
-                    if(listx[i] == "{"){
-                        listx[i] = "";
-                    }
-                    if(listx[i] == "}"){
-                        listx[i] = "REMOVE";
-                    }
+                    listx[i] = listx[i].replaceAll(/[.,"'*+?^${}|\\]/g, "");
                 }
                 else{
                     listx[i]= "";
