@@ -44,7 +44,7 @@
                     randoVersion = "OOTR";
                     pos = localCopy.search("\"locations");
                     endpos = localCopy.search("skipped_locations");
-                    console.log(endpos);
+                    //console.log(endpos);
                     localCopy = localCopy.slice(pos, endpos);
                 }
                 else if(localCopy.search("Location List") != -1){
@@ -199,9 +199,9 @@
         })
 
         function linkClicked(id){
-            console.log("id is: " + id);
+            //console.log("id is: " + id);
             let x = id.substr(id.search("-")+1);
-            console.log(x);
+            //console.log(x);
             let y = document.getElementById("item"+x);
             if(y.className=="items"){
                 y.setAttribute("class", "itemsRevealed");
