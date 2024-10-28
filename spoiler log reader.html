@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Spoiler Log to Check Tracker</title>
+    <link rel="stylesheet" href="mystyle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="inputDiv"> 
+        <h1>Upload Your Spoiler Log</h1>
+        <input type="file" name="inputfile" id="inputfile" value="">
+        <div id="randoDet"></div>
+    </div>
+    
+    <hr>
+
+    <div id="buttonDiv">
+        <input type="button" id="revealButton" class="button" value="Reveal All" onclick="revealAll()">
+        <input type="button" id="hideButton" class="button" value="Hide All" onclick="hideAll()">
+        <input type="button" id="topButton" class="button" value="To Top" onclick="document.documentElement.scrollTop = 0">
+        
+
+    </div>
+
+    <div id="tableDiv"></div>
+
+    <script type="text/javascript">
+        document.getElementById('inputfile').addEventListener('change', function () {
+            let fr = new FileReader();
+            fr.onload = function () {
+                if(document.getElementById("idTable")){
+                    document.getElementById("idTable").remove();
+                }
+                let localCopy = fr.result;
+                let randoVersion = ""
+
+                let pos = localCopy.search("Location List");
+                if (pos == -1){
+                    pos = localCopy.search("\"locations");
+                    randoVersion = "OOTSHIP";
+                    
+                }
+                else{
+                    randoVersion = "OOTMM";
+                }
+
+                document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`
+
+                console.log(randoVersion);
+                localCopy = localCopy.substr(pos)
+                let locationArray = [];
+                let itemArray = [];
+
+                localCopy.split('\n').forEach(line => {
+                    const splitedLine = line.split(':');
+                    if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
+                        //console.log(splitedLine[0].trim());
+                        locationArray.push(splitedLine[0]);
+                        itemArray.push(splitedLine[1]);
+                    }
+                    
+                })
+
+                if (randoVersion == "OOTSHIP"){
+                    locationArray = sanitizeList(locationArray);
+                    itemArray = sanitizeList(itemArray);
+                }
+
+                
+                let x = document.createElement("TABLE");
+                x.setAttribute("id", "idTable");
+                document.getElementById("tableDiv").appendChild(x);
+
+                for (i=0; i<locationArray.length; i++){
+                    let newRow = document.createElement("TR");
+                    let appendBinary = true;
+                    let removeBinary = false;
+                    newRow.setAttribute("id", "row"+i);
+                    document.getElementById("idTable").appendChild(newRow);
+
+                    let newCell1 = document.createElement("TD");
+                    newCell1.setAttribute("class", "locations");
+                    newCell1.setAttribute("id", "location"+i);
+
+                    let newCell2 = document.createElement("TD");
+                    newCell2.setAttribute("class", "items");
+                    newCell2.setAttribute("id", "item"+i);
+
+                    if (randoVersion == "OOTSHIP"){
+                        if(locationArray[i] == "REMOVE"){
+                            appendBinary = false;
+                        }
+
+                        if (locationArray[i] == "item"){
+                            if (itemArray[i].includes("Ice Trap")){
+                                document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>Ice Trap</p></a>`;
+                                document.getElementById(("item"+(i-1)).toString()).setAttribute("class", "items");
+                                itemArray[i] = "";
+                                appendBinary = false;
+                                }
+                            else{
+                                document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`;
+                                document.getElementById(("item"+(i-1)).toString()).setAttribute("class", "items");
+                            }
+                            removeBinary = true;
+                        }
+                    
+                        if(itemArray[i] === undefined || itemArray[i] == ""){
+                            newCell1.innerHTML = locationArray[i];
+                        }
+
+                        if (locationArray[i].includes("locations")){
+                            locationArray[i] = locationArray[i].charAt(0).toUpperCase() + locationArray[i].slice(1);
+                            newCell1.innerHTML = locationArray[i];
+                            newCell1.setAttribute("class", "locationHeader");
+                        }
+                        else if(appendBinary){
+                            newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
+                        }  
+                    
+                    }
+                    if (randoVersion == "OOTMM"){
+                        if(itemArray[i] === undefined || itemArray[i] == ""){
+                            newCell1.innerHTML = locationArray[i];
+                        }
+                        else{
+                            newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
+                        } 
+                    }
+                    
+                    if(itemArray[i] === undefined || itemArray[i] == "" ){
+                        itemArray[i] = "";
+                        if (randoVersion == "OOTMM"){
+                            newCell1.setAttribute("class", "locationHeader");
+                        }
+                        newCell2.setAttribute("class", "itemsNull");
+                    }
+
+                    if(locationArray[i] == "" && itemArray[i] == ""){
+                            removeBinary = true;
+                        }
+
+                    if(appendBinary){
+                        newCell2.innerHTML = `<a href='javascript:void(0)' id='itemLink-${i}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`
+                        document.getElementById("row"+i).appendChild(newCell1);
+                        document.getElementById("row"+i).appendChild(newCell2);
+                    }
+
+                    if (!document.getElementById("row"+i).hasChildNodes() || removeBinary){
+                        document.getElementById("row"+i).remove();
+
+                    }
+
+                }
+
+            }
+
+            fr.readAsText(this.files[0]);
+        })
+
+        function linkClicked(id){
+            console.log("id is: " + id);
+            let x = id.substr(id.search("-")+1);
+            console.log(x);
+            let y = document.getElementById("item"+x);
+            if(y.className=="items"){
+                y.setAttribute("class", "itemsRevealed");
+            }
+            else if(y.className=="itemsRevealed"){
+                y.setAttribute("class", "items");
+            }
+        }
+
+        function revealAll(){
+            let x = document.getElementsByClassName("items");
+            //console.log(x.length)
+            
+            while(x.item(0) != undefined){
+                x.item(0).classList.add("itemsRevealed");
+                x.item(0).classList.remove("items");
+            }
+        }
+
+        function hideAll(){
+            let x = document.getElementsByClassName("itemsRevealed");
+            //console.log(x.length)
+            
+            while(x.item(0) != undefined){
+                x.item(0).classList.add("items");
+                x.item(0).classList.remove("itemsRevealed");
+            }
+        }
+
+        function sanitizeList(listx){
+            for(i=0; i<listx.length; i++){
+                //console.log(i);
+                if(listx[i] != undefined){
+                    listx[i] = listx[i].trim();
+
+                    if(listx[i].includes(",")){
+                        listx[i] = listx[i].substr(0, listx[i].length - 1);
+                    }
+                    if(listx[i].includes("\"")){
+                        listx[i] = listx[i].substr(1, listx[i].length - 2);
+                    }
+                    if(listx[i] == "{"){
+                        listx[i] = "";
+                    }
+                    if(listx[i] == "}"){
+                        listx[i] = "REMOVE";
+                    }
+                }
+                else{
+                    listx[i]= "";
+
+                }
+            }
+            return listx;
+        }
+
+    </script>
+</body>
+
+</html>
