@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
-<!-- test4-->
+<html lang="en">
 <head>
-    <title>OOT Spoiler Log to Check Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>OOT/OOTMM Spoiler Log to Check Tracker</title>
     <link rel="stylesheet" href="mystyle.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +13,8 @@
 
 <body>
     <div id="inputDiv"> 
+        <div id="errorDiv"></div>
+        <div id="infoDiv"></div>
         <h1>Upload Your OOTR/OOTMM/Ship of Harkinian Spoiler Log</h1>
         <input type="file" name="inputfile" id="inputfile" value="">
         <div id="randoDet"></div>
@@ -22,6 +26,8 @@
         <input type="button" id="revealButton" class="button" value="Reveal All" onclick="revealAll()">
         <input type="button" id="hideButton" class="button" value="Hide All" onclick="hideAll()">
         <input type="button" id="topButton" class="button" value="To Top" onclick="document.documentElement.scrollTop = 0">
+        <input type="button" id="saveButton" class="button" value="Save" onclick="saveSpoilerState()">
+        <input type="button" id="loadButton" class="button" value="Load" onclick="loadSpoilerState()">
         
 
     </div>
@@ -29,37 +35,75 @@
     <div id="tableDiv"></div>
 
     <script type="text/javascript">
-        document.getElementById('inputfile').addEventListener('change', function () {
+
+        window.onload = function(){
+            if(document.getElementById("inputfile").value != ""){
+                main(document.getElementById('inputfile'));
+            }
+        }
+
+        document.getElementById('inputfile').addEventListener('change', function () {main(this)});
+
+        function main(file){
+            //console.log("main has ran");
             let fr = new FileReader();
             fr.onload = function () {
                 if(document.getElementById("idTable")){
                     document.getElementById("idTable").remove();
                 }
                 let localCopy = fr.result;
-                let randoVersion = ""
+                let randoVersion = "";
+                let seed = "";
                 let pos = 0;
                 let endpos = 0;
 
                 if (localCopy.search("\":seed_url\":") != -1){
                     randoVersion = "OOTR";
+                    //seed retrieval
+                    pos = localCopy.search("\":seed\":");
+                    let x = localCopy.slice(pos);
+                    endpos = x.search(",");
+                    x = x.slice(0, endpos);
+                    seed = x.split(":")[2].trim();
+                    console.log(seed);
+                    seed = seed.replaceAll(/["]/g, "");
+
                     pos = localCopy.search("\"locations");
                     endpos = localCopy.search("skipped_locations");
-                    //console.log(endpos);
                     localCopy = localCopy.slice(pos, endpos);
                 }
                 else if(localCopy.search("Location List") != -1){
                     randoVersion = "OOTMM";
+                    pos = 5;
+                    endpos = localCopy.search("\n");
+                    seed = localCopy.slice(pos, endpos);
                     pos = localCopy.search("Location List");
-                    localCopy = localCopy.slice(pos)
+                    localCopy = localCopy.slice(pos);
                 }
                 else if(localCopy.search("\"locations") != -1){
                     randoVersion = "OOTSHIP";
+
+                    pos = localCopy.search("\"seed\":");
+                    let x = localCopy.slice(pos);
+                    endpos = x.search(",");
+                    x = x.slice(0, endpos);
+                    seed = x.split(":")[1].trim();
+                    console.log(seed);
+                    seed = seed.replaceAll(/["]/g, "");
+
                     pos = localCopy.search("\"locations");
-                    localCopy = localCopy.slice(pos)
+                    localCopy = localCopy.slice(pos);
+                }
+                else{
+                    document.getElementById("errorDiv").innerText = "Invalid File Uploaded";
+                    document.getElementById("infoDiv").innerHTML = "";
+                    return;
                 }
 
 
-                document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`
+                document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`;
+                document.getElementById("infoDiv").innerHTML = `<p>${seed}</p>`;
+                document.getElementById("errorDiv").innerText = "";
 
                 console.log(randoVersion);
                 let locationArray = [];
@@ -93,11 +137,11 @@
                     document.getElementById("idTable").appendChild(newRow);
 
                     let newCell1 = document.createElement("TD");
-                    newCell1.setAttribute("class", "locations");
+                    newCell1.classList.add("locations");
                     newCell1.setAttribute("id", "location"+i);
 
                     let newCell2 = document.createElement("TD");
-                    newCell2.setAttribute("class", "items");
+                    newCell2.classList.add("items", "itemsHidden");
                     newCell2.setAttribute("id", "item"+i);
 
                     if(locationArray[i] == "REMOVE"){
@@ -135,15 +179,18 @@
 
                     if (randoVersion == "OOTSHIP"){
                         if (locationArray[i] == "item"){
+                            //console.log(itemArray[i]);
                             if (itemArray[i].includes("Ice Trap")){
                                 document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>Ice Trap</p></a>`;
-                                document.getElementById(("item"+(i-1)).toString()).setAttribute("class", "items");
+                                document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
+                                document.getElementById(("item"+(i-1)).toString()).classList.remove("itemsNull");
                                 itemArray[i] = "";
                                 appendBinary = false;
                                 }
                             else{
                                 document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`;
-                                document.getElementById(("item"+(i-1)).toString()).setAttribute("class", "items");
+                                document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
+                                document.getElementById(("item"+(i-1)).toString()).classList.remove("itemsNull");
                             }
                             removeBinary = true;
                         }
@@ -176,7 +223,7 @@
                         if (randoVersion == "OOTMM"){
                             newCell1.setAttribute("class", "locationHeader");
                         }
-                        newCell2.setAttribute("class", "itemsNull");
+                        newCell2.classList.add("itemsNull");
                     }
 
                     if(locationArray[i] == "" && itemArray[i] == ""){
@@ -195,40 +242,41 @@
                     }
                 }
             }
-            fr.readAsText(this.files[0]);
-        })
+            fr.readAsText(file.files[0]);
+        }
 
         function linkClicked(id){
             //console.log("id is: " + id);
             let x = id.substr(id.search("-")+1);
             //console.log(x);
             let y = document.getElementById("item"+x);
-            if(y.className=="items"){
-                y.setAttribute("class", "itemsRevealed");
+            if(y.classList.contains("itemsHidden")){
+                y.classList.add("itemsRevealed");
+                y.classList.remove("itemsHidden");
             }
-            else if(y.className=="itemsRevealed"){
-                y.setAttribute("class", "items");
+            else if(y.classList.contains("itemsRevealed")){
+                y.classList.add("itemsHidden");
+                y.classList.remove("itemsRevealed");
             }
         }
 
         function revealAll(){
-            let x = document.getElementsByClassName("items");
+            let x = document.getElementsByClassName("itemsHidden");
             while(x.item(0) != undefined){
                 x.item(0).classList.add("itemsRevealed");
-                x.item(0).classList.remove("items");
+                x.item(0).classList.remove("itemsHidden");
             }
         }
 
         function hideAll(){
             let x = document.getElementsByClassName("itemsRevealed");        
             while(x.item(0) != undefined){
-                x.item(0).classList.add("items");
+                x.item(0).classList.add("itemsHidden");
                 x.item(0).classList.remove("itemsRevealed");
             }
         }
 
         function sanitizeList(listx){
-
             for(i=0; i<listx.length; i++){
                 //console.log(listx[i]);
                 if(listx[i] != undefined){
@@ -242,6 +290,53 @@
                 }
             }
             return listx;
+        }
+
+        function saveSpoilerState(){
+            let localFile = [];
+            let seed = document.getElementById("infoDiv").innerText;
+            let x = document.querySelectorAll("td.items");
+            for(i=0; i<x.length; i++){
+                if (x[i].classList.contains("itemsHidden")){
+                    localFile.push(0);
+                }
+                if (x[i].classList.contains("itemsRevealed")){
+                    localFile.push(1);  
+                }
+            }
+            //console.log(localFile);
+
+            localStorage.setItem(seed, JSON.stringify(localFile));
+        }
+
+        function loadSpoilerState(){
+            let seed = document.getElementById("infoDiv").innerText;
+            let spoilerState = JSON.parse(localStorage.getItem(seed));
+            if (spoilerState === null){
+                return;
+            }
+            let x = document.getElementsByClassName("items");
+            for(i=0; i<x.length; i++){
+                //console.log(spoilerState[i]);
+                if(spoilerState[i] == 0){
+                    //console.log(x[i].id + " is hidden");
+                    if(!x[i].classList.contains("itemsHidden")){
+                        x[i].classList.add("itemsHidden");
+                        x[i].classList.remove("itemsRevealed");
+                    }
+                }
+                else if(spoilerState[i] == 1){
+                    //console.log(x[i].id + " is revealed");
+                    if(!x[i].classList.contains("itemsRevealed")){
+                        x[i].classList.add("itemsRevealed");
+                        x[i].classList.remove("itemsHidden");
+                    }
+                }
+                else{
+                    console.log("spoiler state was neither 1 or 0")
+                }
+                //console.log(x[i].id);
+            }
         }
 
     </script>

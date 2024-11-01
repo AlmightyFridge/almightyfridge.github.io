@@ -25,14 +25,14 @@ tr{
     border-bottom: 1px solid black;
 }
 
-.items, .items a, .items a:visited, .items a:link{
+.itemsHidden, .itemsHidden a, .itemsHidden a:visited, .itemsHidden a:link{
     color: black;
     background-color: black;
     text-decoration:none;
 
 }
 
-.items:hover, .items:hover a{
+.itemsHidden:hover, .itemsHidden:hover a{
     background-color: white
 }
 
@@ -86,7 +86,7 @@ a:visited {
     display:grid;
     grid-template-areas:
     'title title title'
-    'left . right';
+    'left info right';
 
 }
 
@@ -103,6 +103,12 @@ a:visited {
     text-align: left;
 }
 
+#errorDiv, #infoDiv{
+    grid-area: info;
+}
+
+
+
 #randoDet{
     grid-area:right;
     margin-left: auto;
@@ -111,28 +117,31 @@ a:visited {
 }
 
 #tableDiv{
-    display:grid;
-    grid-template-areas:
-    'table table table table . buttons'
-    'table table table table . buttons'
-    'table table table table . .';
+    display:flex;
+    
 }
 
 #tableDiv table{
-    grid-area:table;
+    width: 80vw;
     color:black;
     
 }
 
 #buttonDiv{
-    display:block;
-    position:fixed;
+    display:flex;
+    position:sticky;
+    flex-wrap:wrap;
     right:0px;
-    top:0px;
+    top:10px;
+    float:right;
     margin: 5px;
+    width: 18vw;
+    justify-content: center;
 }
 
 .button{
+    display:flex;
+    position:relative;
     padding: 16px;
     font-size: 14pt;
 }
