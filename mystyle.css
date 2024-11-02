@@ -1,8 +1,5 @@
 body{
     font-family: "Open Sans", sans-serif;
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none; /* IE 10 and IE 11 */
-    user-select: none; /* Standard syntax */
 }
 
 td a{
@@ -23,6 +20,9 @@ tr{
 
 .items{
     border-bottom: 1px solid black;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }
 
 .itemsHidden, .itemsHidden a, .itemsHidden a:visited, .itemsHidden a:link{
@@ -30,10 +30,6 @@ tr{
     background-color: black;
     text-decoration:none;
 
-}
-
-.itemsHidden:hover, .itemsHidden:hover a{
-    background-color: white
 }
 
 .locations{
@@ -45,7 +41,7 @@ tr{
     text-decoration:none;
 }
 .locations a:hover {
-    color: black
+    font-weight: bold;
 }
 
 a:visited {
@@ -71,48 +67,76 @@ a:visited {
     display: none;
 }
 
-.locationHeader{
+.locationHeader, .locationHeader a:hover{
     font-size:14pt;
     font-weight:bold;
     height: 36px;
     border-style:none;
     line-height:50px;
+    color:black;
     
 
 }
 
-#inputDiv{
+#HeaderDiv{
+    position:relative;
     margin: 20px;
-    display:grid;
-    grid-template-areas:
-    'title title title'
-    'left info right';
+    display:flex;
+    flex-flow:row wrap;
+    justify-content: space-between;
+    align-items: center;
 
 }
 
-#inputDiv h1{
-    grid-area:title;
-    margin-left: auto;
-    margin-right: auto;
+#headerDiv > *{
+    flex-basis: 100%;
+}
+
+#titleDiv{
+    order:0;
+    flex: 1 0 100%;
     text-align: center;
 }
 
-#inputfile{
-    font-size: 16pt;
-    grid-area:left;
-    text-align: left;
+#inputDiv{
+    position:relative;
+    display: grid;
+    max-width: 20%;
+}
+
+#inputButton{
+    grid-column: 1;
+    grid-row: 2;
+    padding: 16px;
+    font-size: 14pt;
+    margin: 2px;
+    width: 200px
+}
+
+.label{
+    grid-column: 1;
+    grid-row: 1;
+    
 }
 
 #errorDiv, #infoDiv{
-    grid-area: info;
+    position:absolute;
+    left:50%;
+    top: 100px;
+    transform: translate(-50%, 0);
+    display: block;
+    order:3;
+    align-self: center;
+    overflow-x:auto;
+    margin: 10px;
+    max-width: 60%;
 }
 
-
-
 #randoDet{
-    grid-area:right;
-    margin-left: auto;
+    display: flex;
+    order:4;
     text-align: right;
+    max-width: 10%;
     
 }
 
@@ -144,4 +168,43 @@ a:visited {
     position:relative;
     padding: 16px;
     font-size: 14pt;
+    margin: 2px;
+}
+
+
+
+.hide{
+    display: none;
+}
+
+#searchInput{
+    font-size: 12pt;
+    display:flex;
+    position:relative;
+    padding: 16px;
+    margin: 2px;
+}
+
+#blurDiv{
+    display:none;
+    backdrop-filter: blur(3px);
+    position:fixed;
+    width:100%;
+    height:100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#popupDiv{
+    display:none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px double black;
+    border-radius: 5px;
+    background-color: white;
+    padding: 20px;
+    
 }
