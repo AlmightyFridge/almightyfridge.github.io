@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>OOT/OOTMM Spoiler Log to Check Tracker</title>
+    <title>OOT/OOTMM/AP Spoiler Log to Checklist</title>
     <link rel="stylesheet" href="mystyle.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,11 +12,18 @@
 </head>
 
 <body>
-    <div id="inputDiv"> 
+
+    <div id="HeaderDiv"> 
+        <div id="titleDiv">
+            <h1>Fridge's Spoiler Log Tracker</h1>
+        </div>
+        <div id="inputDiv">
+            <label for="inputfile" class="label">Upload Your AP/OOTR/OOTMM/SoH Spoiler Log</label>
+            <input type="file" name="inputfile" id="inputfile" value="" class="hide">
+            <input type="button" value="Browse..." id="inputButton" onclick="document.getElementById('inputfile').click();" />
+        </div>
         <div id="errorDiv"></div>
         <div id="infoDiv"></div>
-        <h1>Upload Your OOTR/OOTMM/Ship of Harkinian Spoiler Log</h1>
-        <input type="file" name="inputfile" id="inputfile" value="">
         <div id="randoDet"></div>
     </div>
     
@@ -28,15 +35,30 @@
         <input type="button" id="topButton" class="button" value="To Top" onclick="document.documentElement.scrollTop = 0">
         <input type="button" id="saveButton" class="button" value="Save" onclick="saveSpoilerState()">
         <input type="button" id="loadButton" class="button" value="Load" onclick="loadSpoilerState()">
+        <input type="text" id="searchInput" placeholder="Find Locations" onkeyup="this.onchange()" onchange="searchLocations(this.value)">
         
 
     </div>
 
     <div id="tableDiv"></div>
 
+    <div id="blurDiv">
+        <div id="popupDiv">
+            <form action="javascript:slotNameSubmitted(AP_SlotNameInput.value)">
+                <h4>Enter your slot name</h4>
+                <p>(leave blank for all)</p>
+                <input type="text" id="AP_SlotNameInput">
+                <input type="submit" id="AP_SlotNameSubmit" value="OK">
+            </form>
+        </div>
+    </div>
+    
+
     <script type="text/javascript">
 
         window.onload = function(){
+            document.getElementById('searchInput').value = '';
+            document.getElementById("popupDiv").style.display = "none";
             if(document.getElementById("inputfile").value != ""){
                 main(document.getElementById('inputfile'));
             }
@@ -45,7 +67,6 @@
         document.getElementById('inputfile').addEventListener('change', function () {main(this)});
 
         function main(file){
-            //console.log("main has ran");
             let fr = new FileReader();
             fr.onload = function () {
                 if(document.getElementById("idTable")){
@@ -65,58 +86,93 @@
                     endpos = x.search(",");
                     x = x.slice(0, endpos);
                     seed = x.split(":")[2].trim();
-                    console.log(seed);
                     seed = seed.replaceAll(/["]/g, "");
 
+                    //location retrieval
                     pos = localCopy.search("\"locations");
                     endpos = localCopy.search("skipped_locations");
                     localCopy = localCopy.slice(pos, endpos);
                 }
                 else if(localCopy.search("Location List") != -1){
                     randoVersion = "OOTMM";
+                    //seed retrieval
                     pos = 5;
                     endpos = localCopy.search("\n");
                     seed = localCopy.slice(pos, endpos);
+
+                    //location retrieval
                     pos = localCopy.search("Location List");
                     localCopy = localCopy.slice(pos);
                 }
                 else if(localCopy.search("\"locations") != -1){
                     randoVersion = "OOTSHIP";
-
+                    //seed retrieval
                     pos = localCopy.search("\"seed\":");
                     let x = localCopy.slice(pos);
                     endpos = x.search(",");
                     x = x.slice(0, endpos);
                     seed = x.split(":")[1].trim();
-                    console.log(seed);
                     seed = seed.replaceAll(/["]/g, "");
 
+                    //location retrieval
                     pos = localCopy.search("\"locations");
                     localCopy = localCopy.slice(pos);
+                }
+                else if(localCopy.search("Archipelago") == 0){
+                    randoVersion = "Archipelago";
+                    //seed retrieval
+                    pos = localCopy.search("Seed") 
+                    endpos = localCopy.search("\n");
+                    let x = localCopy.slice(pos, endpos);
+                    seed = x.split(":")[1].trim();
+
+                    promptSlotName();
+
+                    //location retrieval
+                    endpos = localCopy.search("Playthrough:");
+                    if (localCopy.split(":")[0] != "Locations"){                            
+                        pos = localCopy.lastIndexOf("Locations:");
+                        localCopy = localCopy.slice(pos, endpos);
+                    } 
                 }
                 else{
                     document.getElementById("errorDiv").innerText = "Invalid File Uploaded";
                     document.getElementById("infoDiv").innerHTML = "";
                     return;
                 }
+                console.log(seed);
+                buildTable(localCopy, randoVersion, seed);
+            }
+            fr.readAsText(file.files[0]);
+        }
 
+        function buildTable(localCopy, randoVersion, seed){
 
                 document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`;
                 document.getElementById("infoDiv").innerHTML = `<p>${seed}</p>`;
                 document.getElementById("errorDiv").innerText = "";
-
+        
                 console.log(randoVersion);
                 let locationArray = [];
                 let itemArray = [];
+                let combineSplits = "";
+                let splitedLine = [];
 
                 localCopy.split('\n').forEach(line => {
-                    const splitedLine = line.split(/:(.*)/s);
+                    if (randoVersion == "Archipelago"){
+                        //split at last instance of :
+                        splitedLine = line.split(/:(?!.*:.*)/s);
+                    }
+                    else{
+                        //split at first instance of :
+                        splitedLine = line.split(/:(.*)/s);
+                    }
+                    
                     if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
                         //console.log(splitedLine[0].trim());
                         locationArray.push(splitedLine[0]);
                         itemArray.push(splitedLine[1]);
                     }
-                    
                 })
 
                 if (randoVersion == "OOTSHIP" || randoVersion == "OOTR"){
@@ -124,7 +180,6 @@
                     itemArray = sanitizeList(itemArray);
                 }
 
-                
                 let x = document.createElement("TABLE");
                 x.setAttribute("id", "idTable");
                 document.getElementById("tableDiv").appendChild(x);
@@ -144,10 +199,6 @@
                     newCell2.classList.add("items", "itemsHidden");
                     newCell2.setAttribute("id", "item"+i);
 
-                    if(locationArray[i] == "REMOVE"){
-                            appendBinary = false;
-                        }
-
                     if(randoVersion == "OOTR"){
                         if(itemArray[i] === undefined || itemArray[i] == ""){
                             newCell1.innerHTML = locationArray[i];
@@ -163,8 +214,6 @@
                         } 
 
                         if(itemArray[i].includes("item:")){
-                            //let y = itemArray[i].split(" ");
-                            //itemArray[i] = y[1];
                             lengthx = 0;
                             if(itemArray[i].includes("price:")){
                                 lengthx = itemArray[i].indexOf("price:") - itemArray[i].indexOf("item:") - 6;
@@ -209,8 +258,8 @@
                         }  
                     
                     }
-                    if (randoVersion == "OOTMM"){
-                        if(itemArray[i] === undefined || itemArray[i] == ""){
+                    if (randoVersion == "OOTMM" || randoVersion == "Archipelago"){
+                        if(itemArray[i] === undefined || itemArray[i].trim() == ""){
                             newCell1.innerHTML = locationArray[i];
                         }
                         else{
@@ -218,15 +267,21 @@
                         } 
                     }
                     
-                    if(itemArray[i] === undefined || itemArray[i] == "" ){
+                    if (randoVersion == "Archipelago"){
+                        if(locationArray[i].trim() == ""){
+                            removeBinary = true;
+                        }
+                    }
+
+                    if(itemArray[i] === undefined || itemArray[i].trim() == ""){
                         itemArray[i] = "";
-                        if (randoVersion == "OOTMM"){
-                            newCell1.setAttribute("class", "locationHeader");
+                        if (randoVersion == "OOTMM" || randoVersion == "Archipelago"){
+                            newCell1.classList.add("locationHeader");
                         }
                         newCell2.classList.add("itemsNull");
                     }
 
-                    if(locationArray[i] == "" && itemArray[i] == ""){
+                    if(locationArray[i].trim() == "" && itemArray[i].trim() == ""){
                             removeBinary = true;
                         }
 
@@ -240,16 +295,13 @@
                         document.getElementById("row"+i).remove();
 
                     }
-                }
-            }
-            fr.readAsText(file.files[0]);
+                }    
         }
 
         function linkClicked(id){
-            //console.log("id is: " + id);
             let x = id.substr(id.search("-")+1);
-            //console.log(x);
             let y = document.getElementById("item"+x);
+
             if(y.classList.contains("itemsHidden")){
                 y.classList.add("itemsRevealed");
                 y.classList.remove("itemsHidden");
@@ -278,18 +330,37 @@
 
         function sanitizeList(listx){
             for(i=0; i<listx.length; i++){
-                //console.log(listx[i]);
                 if(listx[i] != undefined){
                     listx[i] = listx[i].trim();
-
                     listx[i] = listx[i].replaceAll(/[.,"'*+?^${}|\\]/g, "");
                 }
                 else{
                     listx[i]= "";
-
                 }
             }
             return listx;
+        }
+
+        function searchLocations(inputStr){
+            let searchText = inputStr.toLowerCase().trim();
+            console.log(searchText);
+            if(searchText == null){
+                return;
+            }
+            else{
+                let rows = document.getElementsByTagName("tr");
+                let locations = document.getElementsByClassName("locations");
+                for(i=0; i<locations.length; i++){
+                    if(locations[i].innerText.toLowerCase().includes(searchText)){
+                        rows[i].style.display = "";
+                    }
+                    else{
+                        if(!locations[i].classList.contains("locationHeader")){
+                            rows[i].style.display = "none";
+                        }
+                    }
+                }
+            }
         }
 
         function saveSpoilerState(){
@@ -337,6 +408,32 @@
                 }
                 //console.log(x[i].id);
             }
+        }
+
+        function promptSlotName(){
+            document.getElementById("popupDiv").style.display = "block";
+            document.getElementById("blurDiv").style.display = "block";
+        }
+
+        function slotNameSubmitted(slotName){
+            document.getElementById("popupDiv").style.display = "none";
+            document.getElementById("blurDiv").style.display = "none";
+            if(slotName.trim() == ""){
+                return;
+            }
+            
+            slotName = slotName.toLowerCase();
+            slotName = slotName.charAt(0).toUpperCase() + slotName.slice(1);
+            console.log(slotName)
+            let x = document.querySelectorAll(".locations");
+            for(i=1; i<x.length; i++){
+                if(!x[i].innerText.includes(`(${slotName})`)){
+                    x[i].parentElement.remove();
+
+
+                }
+            }
+
         }
 
     </script>
