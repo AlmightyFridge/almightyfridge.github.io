@@ -148,154 +148,158 @@
 
         function buildTable(localCopy, randoVersion, seed){
 
-                document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`;
-                document.getElementById("infoDiv").innerHTML = `<p>${seed}</p>`;
-                document.getElementById("errorDiv").innerText = "";
-        
-                console.log(randoVersion);
-                let locationArray = [];
-                let itemArray = [];
-                let combineSplits = "";
-                let splitedLine = [];
+            document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`;
+            document.getElementById("infoDiv").innerHTML = `<p>${seed}</p>`;
+            document.getElementById("errorDiv").innerText = "";
+    
+            console.log(randoVersion);
+            let locationArray = [];
+            let itemArray = [];
+            let combineSplits = "";
+            let splitedLine = [];
+            let group = "";
 
-                localCopy.split('\n').forEach(line => {
-                    if (randoVersion == "Archipelago"){
-                        //split at last instance of :
-                        splitedLine = line.split(/:(?!.*:.*)/s);
-                    }
-                    else{
-                        //split at first instance of :
-                        splitedLine = line.split(/:(.*)/s);
-                    }
-                    
-                    if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
-                        //console.log(splitedLine[0].trim());
-                        locationArray.push(splitedLine[0]);
-                        itemArray.push(splitedLine[1]);
-                    }
-                })
+            localCopy.split('\n').forEach(line => {
+                if (randoVersion == "Archipelago"){
+                    //split at last instance of :
+                    splitedLine = line.split(/:(?!.*:.*)/s);
+                }
+                else{
+                    //split at first instance of :
+                    splitedLine = line.split(/:(.*)/s);
+                }
+                
+                if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
+                    locationArray.push(splitedLine[0]);
+                    itemArray.push(splitedLine[1]);
+                }
+            })
 
-                if (randoVersion == "OOTSHIP" || randoVersion == "OOTR"){
-                    locationArray = sanitizeList(locationArray);
-                    itemArray = sanitizeList(itemArray);
+            if (randoVersion == "OOTSHIP" || randoVersion == "OOTR"){
+                locationArray = sanitizeList(locationArray);
+                itemArray = sanitizeList(itemArray);
+            }
+
+            let x = document.createElement("TABLE");
+            x.setAttribute("id", "idTable");
+            document.getElementById("tableDiv").appendChild(x);
+
+            for (i=0; i<locationArray.length; i++){
+                let newRow = document.createElement("TR");
+                let appendBinary = true;
+                let removeBinary = false;
+                newRow.setAttribute("id", "row"+i);
+                document.getElementById("idTable").appendChild(newRow);
+
+                let newCell1 = document.createElement("TD");
+                newCell1.classList.add("locations");
+                newCell1.setAttribute("id", "location"+i);
+
+                let newCell2 = document.createElement("TD");
+                newCell2.classList.add("items", "itemsHidden");
+                newCell2.setAttribute("id", "item"+i);
+
+                if(randoVersion == "OOTR"){
+                    if(itemArray[i] === undefined || itemArray[i] == ""){
+                        newCell1.innerHTML = locationArray[i];
+                    }
+
+                    if (locationArray[i].includes("locations")){
+                        locationArray[i] = locationArray[i].charAt(0).toUpperCase() + locationArray[i].slice(1);
+                        newCell1.innerHTML = locationArray[i];
+                        newCell1.classList.add("locationHeader");
+                    }
+                    else if(appendBinary){
+                        newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
+                    } 
+
+                    if(itemArray[i].includes("item:")){
+                        lengthx = 0;
+                        if(itemArray[i].includes("price:")){
+                            lengthx = itemArray[i].indexOf("price:") - itemArray[i].indexOf("item:") - 6;
+                        }
+                        if(itemArray[i].includes("model:")){
+                            lengthx = itemArray[i].indexOf("model:") - itemArray[i].indexOf("item:") - 6;
+                        }
+
+                        itemArray[i] = itemArray[i].substr(5, lengthx);
+                    }
                 }
 
-                let x = document.createElement("TABLE");
-                x.setAttribute("id", "idTable");
-                document.getElementById("tableDiv").appendChild(x);
-
-                for (i=0; i<locationArray.length; i++){
-                    let newRow = document.createElement("TR");
-                    let appendBinary = true;
-                    let removeBinary = false;
-                    newRow.setAttribute("id", "row"+i);
-                    document.getElementById("idTable").appendChild(newRow);
-
-                    let newCell1 = document.createElement("TD");
-                    newCell1.classList.add("locations");
-                    newCell1.setAttribute("id", "location"+i);
-
-                    let newCell2 = document.createElement("TD");
-                    newCell2.classList.add("items", "itemsHidden");
-                    newCell2.setAttribute("id", "item"+i);
-
-                    if(randoVersion == "OOTR"){
-                        if(itemArray[i] === undefined || itemArray[i] == ""){
-                            newCell1.innerHTML = locationArray[i];
-                        }
-
-                        if (locationArray[i].includes("locations")){
-                            locationArray[i] = locationArray[i].charAt(0).toUpperCase() + locationArray[i].slice(1);
-                            newCell1.innerHTML = locationArray[i];
-                            newCell1.setAttribute("class", "locationHeader");
-                        }
-                        else if(appendBinary){
-                            newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
-                        } 
-
-                        if(itemArray[i].includes("item:")){
-                            lengthx = 0;
-                            if(itemArray[i].includes("price:")){
-                                lengthx = itemArray[i].indexOf("price:") - itemArray[i].indexOf("item:") - 6;
+                if (randoVersion == "OOTSHIP"){
+                    if (locationArray[i] == "item"){
+                        //console.log(itemArray[i]);
+                        if (itemArray[i].includes("Ice Trap")){
+                            document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>Ice Trap</p></a>`;
+                            document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
+                            document.getElementById(("item"+(i-1)).toString()).classList.remove("itemsNull");
+                            itemArray[i] = "";
+                            appendBinary = false;
                             }
-                            if(itemArray[i].includes("model:")){
-                                lengthx = itemArray[i].indexOf("model:") - itemArray[i].indexOf("item:") - 6;
-                            }
-
-                            itemArray[i] = itemArray[i].substr(5, lengthx);
-                        }
-                    }
-
-                    if (randoVersion == "OOTSHIP"){
-                        if (locationArray[i] == "item"){
-                            //console.log(itemArray[i]);
-                            if (itemArray[i].includes("Ice Trap")){
-                                document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>Ice Trap</p></a>`;
-                                document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
-                                document.getElementById(("item"+(i-1)).toString()).classList.remove("itemsNull");
-                                itemArray[i] = "";
-                                appendBinary = false;
-                                }
-                            else{
-                                document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`;
-                                document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
-                                document.getElementById(("item"+(i-1)).toString()).classList.remove("itemsNull");
-                            }
-                            removeBinary = true;
-                        }
-                    
-                        if(itemArray[i] === undefined || itemArray[i] == ""){
-                            newCell1.innerHTML = locationArray[i];
-                        }
-
-                        if (locationArray[i].includes("locations")){
-                            locationArray[i] = locationArray[i].charAt(0).toUpperCase() + locationArray[i].slice(1);
-                            newCell1.innerHTML = locationArray[i];
-                            newCell1.setAttribute("class", "locationHeader");
-                        }
-                        else if(appendBinary){
-                            newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
-                        }  
-                    
-                    }
-                    if (randoVersion == "OOTMM" || randoVersion == "Archipelago"){
-                        if(itemArray[i] === undefined || itemArray[i].trim() == ""){
-                            newCell1.innerHTML = locationArray[i];
-                        }
                         else{
-                            newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
-                        } 
-                    }
-                    
-                    if (randoVersion == "Archipelago"){
-                        if(locationArray[i].trim() == ""){
-                            removeBinary = true;
+                            document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`;
+                            document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
+                            document.getElementById(("item"+(i-1)).toString()).classList.remove("itemsNull");
                         }
+                        removeBinary = true;
+                    }
+                
+                    if(itemArray[i] === undefined || itemArray[i] == ""){
+                        newCell1.innerHTML = locationArray[i];
                     }
 
+                    if (locationArray[i].includes("locations")){
+                        locationArray[i] = locationArray[i].charAt(0).toUpperCase() + locationArray[i].slice(1);
+                        newCell1.innerHTML = locationArray[i];
+                        newCell1.classList.add("locationHeader");
+                    }
+                    else if(appendBinary){
+                        newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
+                    }  
+                
+                }
+                if (randoVersion == "OOTMM" || randoVersion == "Archipelago"){
                     if(itemArray[i] === undefined || itemArray[i].trim() == ""){
-                        itemArray[i] = "";
-                        if (randoVersion == "OOTMM" || randoVersion == "Archipelago"){
-                            newCell1.classList.add("locationHeader");
-                        }
-                        newCell2.classList.add("itemsNull");
+                        newCell1.innerHTML = locationArray[i];
+                    }
+                    else{
+                        newCell1.innerHTML = `<a href='javascript:void(0)' id='locationLink-${i}' onclick='linkClicked(this.id)'><p>${locationArray[i]}</p></a>`;
+                    } 
+                }
+                
+                if (randoVersion == "Archipelago"){
+                    if(locationArray[i].trim() == ""){
+                        removeBinary = true;
+                    }
+                }
+
+                if(itemArray[i] === undefined || itemArray[i].trim() == ""){
+                    itemArray[i] = "";
+                    if (randoVersion == "OOTMM" || randoVersion == "Archipelago"){
+                        newCell1.classList.add("locationHeader");
+                        group = locationArray[i].trim().split(/\s(?!.*\s.*)/s)[0];
+                        group = group.replaceAll(" ", "_");
+                    }
+                    newCell2.classList.add("itemsNull");
+                }
+
+                if(locationArray[i].trim() == "" && itemArray[i].trim() == ""){
+                        removeBinary = true;
                     }
 
-                    if(locationArray[i].trim() == "" && itemArray[i].trim() == ""){
-                            removeBinary = true;
-                        }
-
-                    if(appendBinary){
-                        newCell2.innerHTML = `<a href='javascript:void(0)' id='itemLink-${i}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`
-                        document.getElementById("row"+i).appendChild(newCell1);
-                        document.getElementById("row"+i).appendChild(newCell2);
+                if(appendBinary){
+                    if(randoVersion == "OOTMM" && !removeBinary){
+                        newCell1.classList.add(group);
                     }
+                    newCell2.innerHTML = `<a href='javascript:void(0)' id='itemLink-${i}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`
+                    document.getElementById("row"+i).appendChild(newCell1);
+                    document.getElementById("row"+i).appendChild(newCell2);
+                }
 
-                    if (!document.getElementById("row"+i).hasChildNodes() || removeBinary){
-                        document.getElementById("row"+i).remove();
-
-                    }
-                }    
+                if (!document.getElementById("row"+i).hasChildNodes() || removeBinary){
+                    document.getElementById("row"+i).remove();
+                }
+            }    
         }
 
         function linkClicked(id){
@@ -343,23 +347,35 @@
 
         function searchLocations(inputStr){
             let searchText = inputStr.toLowerCase().trim().split(" ");
-            console.log(searchText);
             if(searchText == null){
                 return;
             }
             else{
                 let displayRow = true;
+                let locationClassName = "";
                 let rows = document.getElementsByTagName("tr");
                 let locations = document.getElementsByClassName("locations");
                 for(i=0; i<locations.length; i++){
                     displayRow = true;
-                    searchText.forEach((el) => {
-                        if (!locations[i].innerText.toLowerCase().includes(el)){
-                            if(!locations[i].classList.contains("locationHeader")){
-                                displayRow = false;
+                    locationClassName = locations[i].classList[(locations[i].classList.length - 1)].toLowerCase();
+                    if(locationClassName == "locations"){
+                        searchText.forEach((el) => {
+                            if (!locations[i].innerText.toLowerCase().includes(el)){
+                                if(!locations[i].classList.contains("locationHeader")){
+                                    displayRow = false;
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
+                    else{
+                        searchText.forEach((el) => {
+                            if (!locations[i].innerText.toLowerCase().includes(el) && !locationClassName.includes(el)){
+                                if(!locations[i].classList.contains("locationHeader")){
+                                    displayRow = false;
+                                }
+                            }
+                        });
+                    }
                     if(displayRow){
                         rows[i].style.display = "";
                     }
@@ -367,7 +383,6 @@
                         rows[i].style.display = "none";
                     }
                 }
-                
             }
         }
 
@@ -383,8 +398,6 @@
                     localFile.push(1);  
                 }
             }
-            //console.log(localFile);
-
             localStorage.setItem(seed, JSON.stringify(localFile));
         }
 
@@ -396,16 +409,13 @@
             }
             let x = document.getElementsByClassName("items");
             for(i=0; i<x.length; i++){
-                //console.log(spoilerState[i]);
                 if(spoilerState[i] == 0){
-                    //console.log(x[i].id + " is hidden");
                     if(!x[i].classList.contains("itemsHidden")){
                         x[i].classList.add("itemsHidden");
                         x[i].classList.remove("itemsRevealed");
                     }
                 }
                 else if(spoilerState[i] == 1){
-                    //console.log(x[i].id + " is revealed");
                     if(!x[i].classList.contains("itemsRevealed")){
                         x[i].classList.add("itemsRevealed");
                         x[i].classList.remove("itemsHidden");
@@ -414,7 +424,6 @@
                 else{
                     console.log("spoiler state was neither 1 or 0")
                 }
-                //console.log(x[i].id);
             }
         }
 
@@ -437,8 +446,6 @@
             for(i=1; i<x.length; i++){
                 if(!x[i].innerText.includes(`(${slotName})`)){
                     x[i].parentElement.remove();
-
-
                 }
             }
 
