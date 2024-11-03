@@ -342,24 +342,32 @@
         }
 
         function searchLocations(inputStr){
-            let searchText = inputStr.toLowerCase().trim();
+            let searchText = inputStr.toLowerCase().trim().split(" ");
             console.log(searchText);
             if(searchText == null){
                 return;
             }
             else{
+                let displayRow = true;
                 let rows = document.getElementsByTagName("tr");
                 let locations = document.getElementsByClassName("locations");
                 for(i=0; i<locations.length; i++){
-                    if(locations[i].innerText.toLowerCase().includes(searchText)){
+                    displayRow = true;
+                    searchText.forEach((el) => {
+                        if (!locations[i].innerText.toLowerCase().includes(el)){
+                            if(!locations[i].classList.contains("locationHeader")){
+                                displayRow = false;
+                            }
+                        }
+                    });
+                    if(displayRow){
                         rows[i].style.display = "";
                     }
                     else{
-                        if(!locations[i].classList.contains("locationHeader")){
-                            rows[i].style.display = "none";
-                        }
+                        rows[i].style.display = "none";
                     }
                 }
+                
             }
         }
 
