@@ -6,6 +6,7 @@ td a{
     height:100%;
     display: block;
     padding-bottom: 0px;
+    overflow: hidden;
 }
 
 p{
@@ -208,4 +209,16 @@ a:visited {
     background-color: white;
     padding: 20px;
     
+}
+
+#dungeonTracker{
+    display:block;
+    position:fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px double black;
+    border-radius: 5px;
+    background-color: white;
+    padding: 20px;
 }

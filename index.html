@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>OOT/OOTMM/AP Spoiler Log to Checklist</title>
+    <meta X-Content-Type-Options: nosniff>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
     <link rel="stylesheet" href="mystyle.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+    <script crossorigin src="logic/items.js" type="module"></script>
+    <script type="module" crossorigin src="logic/functions.js"></script>
+
 </head>
 
 <body>
@@ -35,11 +42,14 @@
         <input type="button" id="topButton" class="button" value="To Top" onclick="document.documentElement.scrollTop = 0">
         <input type="button" id="saveButton" class="button" value="Save" onclick="saveSpoilerState()">
         <input type="button" id="loadButton" class="button" value="Load" onclick="loadSpoilerState()">
+        <input type="button" id="dungeonTrackerButton" class="button" value="Dungeons" onclick="buildDungeonTracker('OOTMM')">
         <input type="text" id="searchInput" placeholder="Find Locations" onkeyup="this.onchange()" onchange="searchLocations(this.value)">
+        <div id="inventory"></div>
+        
         
 
     </div>
-
+    <div id="dungeonTracker"></div>
     <div id="tableDiv"></div>
 
     <div id="blurDiv">
@@ -54,7 +64,9 @@
     </div>
     
 
-    <script type="text/javascript">
+    <script>
+        //import { items } from "logic/items.js";
+        //import * as requirements from "logic/functions.js";
 
         window.onload = function(){
             document.getElementById('searchInput').value = '';
@@ -103,6 +115,7 @@
                     //location retrieval
                     pos = localCopy.search("Location List");
                     localCopy = localCopy.slice(pos);
+                    getStarterItems(fr.result);
                 }
                 else if(localCopy.search("\"locations") != -1){
                     randoVersion = "OOTSHIP";
@@ -141,6 +154,8 @@
                     return;
                 }
                 console.log(seed);
+
+                
                 buildTable(localCopy, randoVersion, seed);
             }
             fr.readAsText(file.files[0]);
@@ -172,6 +187,7 @@
                 if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
                     locationArray.push(splitedLine[0]);
                     itemArray.push(splitedLine[1]);
+                    
                 }
             })
 
@@ -184,7 +200,8 @@
             x.setAttribute("id", "idTable");
             document.getElementById("tableDiv").appendChild(x);
 
-            for (i=0; i<locationArray.length; i++){
+            for (let i=0; i<locationArray.length; i++){
+                //console.log(locationArray[i]);
                 let newRow = document.createElement("TR");
                 let appendBinary = true;
                 let removeBinary = false;
@@ -309,11 +326,14 @@
             if(y.classList.contains("itemsHidden")){
                 y.classList.add("itemsRevealed");
                 y.classList.remove("itemsHidden");
+                handleInventory(y.innerText, "add");
             }
             else if(y.classList.contains("itemsRevealed")){
                 y.classList.add("itemsHidden");
                 y.classList.remove("itemsRevealed");
+                handleInventory(y.innerText, "remove");
             }
+
         }
 
         function revealAll(){
@@ -333,7 +353,7 @@
         }
 
         function sanitizeList(listx){
-            for(i=0; i<listx.length; i++){
+            for(let i=0; i<listx.length; i++){
                 if(listx[i] != undefined){
                     listx[i] = listx[i].trim();
                     listx[i] = listx[i].replaceAll(/[.,"'*+?^${}|\\]/g, "");
@@ -355,7 +375,7 @@
                 let locationClassName = "";
                 let rows = document.getElementsByTagName("tr");
                 let locations = document.getElementsByClassName("locations");
-                for(i=0; i<locations.length; i++){
+                for(let i=0; i<locations.length; i++){
                     displayRow = true;
                     locationClassName = locations[i].classList[(locations[i].classList.length - 1)].toLowerCase();
                     if(locationClassName == "locations"){
@@ -408,7 +428,7 @@
                 return;
             }
             let x = document.getElementsByClassName("items");
-            for(i=0; i<x.length; i++){
+            for(let i=0; i<x.length; i++){
                 if(spoilerState[i] == 0){
                     if(!x[i].classList.contains("itemsHidden")){
                         x[i].classList.add("itemsHidden");
@@ -423,6 +443,204 @@
                 }
                 else{
                     console.log("spoiler state was neither 1 or 0")
+                }
+            }
+        }
+
+        function buildDungeonTracker(randoVersion){
+            if(randoVersion != "OOTMM"){
+                return;
+            }
+            let dungeonsList = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
+                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Ganon's Castle", "Ganon's Tower", 
+                "Bottom of the Well", "Ice Cavern", "Gerudo Training Grounds", "Woodfall Temple", "Snowhead Temple",
+                "Great Bay Temple", "Stone Tower Temple", "Inverted Stone Tower Temple", "Swamp Spider House", 
+                "Ocean Spider House", "Pirate's Fortress", "Ikana Castle", "Beneath The Well Front", "Beneath The Well Back",
+                "Clock Tower"
+            ];
+            let dungeonRewardsList = ["Kokiri Emerald", "Goron Ruby", "Zora Sapphire", "Light Medallion", "Forest Medallion",
+                "Fire Medallion", "Water Medallion", "Shadow Medallion", "Spirit Medallion", "Odolwa's Remains", "Goht's Remains",
+                "Gyorg's Remains", "Twinmold's Remains"
+            ];
+            let newTable = document.createElement("table");
+            //let newRow = document.createElement("tr");
+            //let newCell = document.createElement("td");
+
+            
+
+            for(let i=0; i<dungeonsList.length; i++){
+                let newRow = document.createElement("tr");
+                let cell1 = document.createElement("td");
+                let cell2 = document.createElement("td");
+
+
+                let x = document.createElement("select");
+                x.name = `${dungeonsList[i]} Entrance`;
+                x.id = `entrance${i}`;
+                x.innerHTML += `<option value="-----">-----</option>`;
+
+                let y = document.createElement("label");
+                y.innerText = `${dungeonsList[i]}:`;
+
+                for(let z=0; z<dungeonsList.length; z++){
+                    x.innerHTML += `<option value="${dungeonsList[z]}">${dungeonsList[z]}</option>`;
+                }
+                cell1.appendChild(y);
+                cell2.appendChild(x);
+
+                newRow.appendChild(cell1);
+                newRow.appendChild(cell2);
+                
+                newTable.appendChild(newRow);
+
+                document.getElementById("dungeonTracker").appendChild(newTable);
+            }
+            
+        }
+
+        function getStarterItems(log){
+            //Starting Items
+            let startPos = log.search("Starting Items") + 14;
+            let endPos = log.search("Junk Locations");
+            log = log.slice(startPos, endPos).trim();
+            //document.getElementById("inventory").innerText = log;
+
+            let startItemArray = [];
+
+            x = log.split("\n").forEach(line => {
+                //y = line.split(/:(.*)/s);
+                line = line.trim();
+                startItemArray.push(line);
+            })
+            console.log(startItemArray);
+            for(let i=0; i<startItemArray.length; i++){
+                console.log(i);
+                //console.log(startItemArray);
+                a = startItemArray[i].split(/:(?!.*:.*)/s); //removes everything after the colon
+                console.log(a);
+                console.log(startItemArray[i]);
+                startItemArray[i] = a[0];
+                handleInventory(startItemArray[i], "starter");
+                
+                
+            }
+            console.log("the starter item array length is: " + startItemArray.length);
+        }
+
+        function handleInventory(inventoryItem, state){ //state can be add, remove, or starter. starter is a more permanent add.
+            
+            let itemListQuery1 = "";
+            let itemListQuery2 = "";
+            let sharedItem = false;
+
+            if (inventoryItem.search("(OoT)") != -1){
+                itemListQuery1 = "oot_";
+                inventoryItem = inventoryItem.replaceAll(" (OoT)", "");
+            }
+            else if(inventoryItem.search("(MM)") != -1){
+                itemListQuery1 = "mm_";
+                inventoryItem = inventoryItem.replaceAll(" (MM)", "");
+            }
+            else{
+                itemListQuery1 = "oot_";
+                itemListQuery2 = "mm_";
+                sharedItem = true;
+            }
+            inventoryItem = inventoryItem.trim();
+            inventoryItem = inventoryItem.replaceAll(/[.,"'*+?^${}|\\0-9]/g, "");
+            inventoryItem = inventoryItem.replaceAll(/\s/g, "_");
+
+            itemListQuery1 += inventoryItem; 
+            itemListQuery1 = itemListQuery1.replaceAll("__", "_");
+            itemListQuery1 = itemListQuery1.toLowerCase();
+
+            if(sharedItem){
+                itemListQuery2 += inventoryItem; 
+                itemListQuery2 = itemListQuery2.replaceAll("__", "_");
+                itemListQuery2 = itemListQuery2.toLowerCase();
+            }
+
+            //this checks to see if the property exists. otherwise it would add unecessary properties
+            if(items[itemListQuery1] != null){
+                if(Number.isInteger(items[itemListQuery1])){
+                    switch(state){
+                        case "add":
+                            items[itemListQuery1] += 1;
+                            break;
+                        case "remove":
+                            items[itemListQuery1] -= 1;
+                            break;
+                        case "starter": 
+                            items.starterItems.push(itemListQuery1);
+                            items[itemListQuery1] += 1;
+                            break;
+                    }
+                }
+                else{
+                    switch(state){
+                        case "add":
+                            items[itemListQuery1] = true;
+                            break;
+                        case "remove":
+                            items[itemListQuery1] = false;
+                            break;
+                        case "starter": 
+                            items.starterItems.push(itemListQuery1);
+                            items[itemListQuery1] = true;
+                            break;
+                    }
+                }
+            }
+            if(items[itemListQuery2] != null){
+                if(Number.isInteger(items[itemListQuery2])){
+                    switch(state){
+                        case "add":
+                            items[itemListQuery2] += 1;
+                            break;
+                        case "remove":
+                            items[itemListQuery2] -= 1;
+                            break;
+                        case "starter": 
+                            items.starterItems.push(itemListQuery2);
+                            items[itemListQuery2] += 1;
+                            break;
+                    }
+                }
+                else{
+                    switch(state){
+                        case "add":
+                            items[itemListQuery2] = true;
+                            break;
+                        case "remove":
+                            items[itemListQuery2] = false;
+                            break;
+                        case "starter": 
+                            items.starterItems.push(itemListQuery2);
+                            items[itemListQuery2] = true;
+                            break;
+                    }
+                }
+            }
+            //console.log(items);
+            displayInventory();
+        }        
+
+        function displayInventory(){
+            document.getElementById("inventory").innerText = "";
+            for (const [key, value] of Object.entries(items)) {
+                if (value){
+                    if(key == "starterItems"){
+                        for(let i=0; i<items.starterItems.length; i++){
+                            document.getElementById("inventory").innerText += items.starterItems[i];
+                            document.getElementById("inventory").innerText += "\n";
+                        }
+                    }
+                    else{
+                        if(document.getElementById("inventory").innerText.search(key) == -1){
+                            document.getElementById("inventory").innerText += key;
+                            document.getElementById("inventory").innerText += "\n";
+                        }
+                    }
                 }
             }
         }
@@ -450,6 +668,251 @@
             }
 
         }
+
+        var items = {
+
+        //starter item array to not lose them in inventory tracking
+            starterItems : [],
+
+        //init oot items
+        //items
+            oot_deku_stick : false,
+            oot_deku_nuts : false,
+            oot_slingshot : false,
+            oot_bomb_bag : 0,  //max 3
+            oot_bombchu : false,
+            oot_boomerang : false,
+            oot_fairy_ocarina : false,
+            oot_ocarina_of_time : false,
+            oot_magic_bean : false,
+            oot_bow : false,
+            oot_fire_arrow : false,
+            oot_ice_arrow : false,
+            oot_light_arrow : false,
+            oot_hookshot : false,
+            oot_longshot : false,
+            oot_hammer : false,
+            oot_lens_of_truth : false,
+            oot_dins_fire : false,
+            oot_farores_wind : false,
+            oot_nayrus_love : false,
+            oot_rutos_letter : false,
+            oot_bottle : 0, //max 3
+        //equipment
+            oot_kokiri_sword : false,
+            oot_master_sword : false,
+            oot_giants_knife : false,
+            oot_biggorons_sword : false,
+            oot_deku_shield : false,
+            oot_hylian_shield : false,
+            oot_mirror_shield : false,
+            oot_goron_tunic : false,
+            oot_zora_tunic : false,
+            oot_iron_boots : false,
+            oot_hover_boots : false,
+            oot_bullet_bag1 : false,
+            oot_bullet_bag2 : false,
+            oot_quiver1 : false,
+            oot_quiver2 : false,
+            oot_gorons_bracelet : false,
+            oot_silver_gauntlets : false,
+            oot_golden_gauntlets : false,
+            oot_silver_scale : false,
+            oot_golden_scale : false,
+            oot_childs_wallet : false,
+            oot_adults_wallet : false,
+            oot_giants_wallet : false,
+            oot_colossal_wallet : false,
+            oot_stone_of_agony : false,
+            oot_magic_meter1 : false,
+            oot_magic_meter2 : false,
+        //trade quest
+            oot_weird_egg : false,
+            oot_zeldas_letter : false,
+            oot_keaton_mask : false,
+            oot_skull_mask : false,
+            oot_spooky_mask : false,
+            oot_bunny_hood : false,
+            oot_mask_of_truth : false,
+            oot_goron_mask : false,
+            oot_zora_mask : false,
+            oot_gerudo_mask : false,
+            oot_pocket_egg : false,
+            oot_pocket_cucco : false,
+            oot_cojiro : false,
+            oot_odd_mushroom : false,
+            oot_odd_potion : false,
+            oot_poachers_saw : false,
+            oot_broken_goron_sword : false,
+            oot_prescription : false,
+            oot_eyeball_frog : false,
+            oot_eyedrops : false,
+            oot_claim_check : false,
+        //dungeon rewards
+            oot_kokiris_emerald : false,
+            oot_gorons_ruby : false,
+            oot_zoras_sapphire : false,
+            oot_light_medallion : false,
+            oot_forest_medallion : false,
+            oot_fire_medallion : false,
+            oot_water_medallion : false,
+            oot_shadow_medallion : false,
+            oot_spirit_medallion : false,
+        //songs
+            oot_zeldas_lullaby : false,
+            oot_eponas_song : false,
+            oot_sarias_song : false,
+            oot_song_of_time : false,
+            oot_suns_song : false,
+            oot_song_of_storms : false,
+            oot_minuet_of_forest : false,
+            oot_bolero_of_fire : false,
+            oot_serenade_of_water : false,
+            oot_nocturne_of_shadow : false,
+            oot_requiem_of_spirit : false,
+            oot_prelude_of_light : false,
+
+
+        //init mm items
+        //items
+            mm_fairy_ocarina : false,
+            mm_ocarina_of_time : false,
+            mm_heros_bow : false,
+            mm_fire_arrow : false,
+            mm_ice_arrow : false,
+            mm_light_arrow : false,
+            mm_bomb_bag : 0, //max 3
+            mm_bombchu : false,
+            mm_deku_stick : false,
+            mm_deku_nuts : false,
+            mm_magic_bean : false,
+            mm_pictograph_box : false,
+            mm_lens_of_truth : false,
+            mm_hookshot : false,
+            mm_great_fairy_sword : false,
+            mm_bottle : 0, //max 6
+
+        //trade items
+            mm_moons_tear : false,
+            mm_land_title_deed : false,
+            mm_swamp_title_deed : false,
+            mm_mountain_title_deed : false,
+            mm_ocean_title_deed : false,
+            mm_room_key : false,
+            mm_letter_to_kafei : false,
+            mm_pendant_of_memories : false,
+            mm_letter_to_mama : false,
+        //equipment
+            mm_kokiri_sword : false,
+            mm_razor_sword : false,
+            mm_gilded_sword : false,
+            mm_heros_shield : false,
+            mm_mirror_shield : false,
+            mm_child_wallet : false,
+            mm_adult_wallet : false,
+            mm_giant_wallet : false,
+            mm_colossal_wallet : false,
+            mm_quiver1 : false,
+            mm_quiver2 : false,
+            mm_magic_meter2 : false,
+            mm_magic_meter1 : false,
+            mm_bombers_notebook : false,
+        //masks
+            mm_postmans_hat : false,
+            mm_all_night_mask : false,
+            mm_blast_mask : false,
+            mm_stone_mask : false,
+            mm_great_fairy_mask : false,
+            mm_deku_mask : false,
+            mm_keaton_mask : false,
+            mm_bremen_mask : false,
+            mm_bunny_hood : false,
+            mm_don_geros_mask : false,
+            mm_mask_of_scents : false,
+            mm_goron_mask : false,
+            mm_romanis_mask : false,
+            mm_circus_leaders_mask : false,
+            mm_kafeis_mask : false,
+            mm_couples_mask : false,
+            mm_mask_of_truth : false,
+            mm_zora_mask : false,
+            mm_kamaros_mask : false,
+            mm_gibdo_mask : false,
+            mm_garos_mask : false,
+            mm_captains_hat : false,
+            mm_giants_mask : false,
+            mm_fierce_deitys_mask : false,
+        //dungeon rewards
+            mm_odolwas_remains : false,
+            mm_gohts_remains : false,
+            mm_gyorgs_remains : false,
+            mm_twinmolds_remains : false,
+        //songs
+            mm_song_of_time : false,
+            mm_song_of_healing : false,
+            mm_song_of_storms : false,
+            mm_song_of_soaring : false,
+            mm_eponas_song : false,
+            mm_sonata_of_awakening : false,
+            mm_goron_lullaby_intro : false,
+            mm_goron_lullaby : false,
+            mm_new_wave_bossa_nova : false,
+            mm_oath_to_order : false,
+
+        //oot key counts
+            oot_forest_small_keys : 0, //max 5
+            oot_forest_boss_key : false,
+            oot_fire_small_keys : 0, //max 8
+            oot_fire_boss_key : false,
+            oot_water_small_keys : 0, //max 6
+            oot_water_boss_key : false,
+            oot_shadow_small_keys : 0, //max 5
+            oot_shadow_boss_key : false,
+            oot_spirit_small_keys : 0, //max 5
+            oot_spirit_boss_key : false,
+            oot_ganon_small_keys : 0, //max 2
+            oot_ganon_boss_key : false,
+            oot_well_small_keys : 0, //max 3
+            oot_gtg_small_keys : 0, //max 9
+
+        //oot skulls
+            skulltula_token : 0, //max 100
+
+        //mm key counts
+            mm_woodfall_small_keys : 0, //max 1
+            mm_snowhead_small_keys : 0, //max 3
+            mm_gbt_small_keys : 0, //max 1
+            mm_stt_small_keys : 0, //max 4
+            mm_woodfall_boss_key : false,
+            mm_snowhead_boss_key : false,
+            mm_gbt_boss_key : false,
+            mm_stt_boss_key : false,
+
+        //mm fairies
+            mm_town_sf: false,
+            mm_woodfall_sf : 0, //max 15
+            mm_snowhead_sf : false, //max 15
+            mm_gbt_sf : false, //max 15
+            mm_stt_sf : false, //max 15
+
+        //mm clocks
+            mm_clock_day1: false,
+            mm_clock_day2: false,
+            mm_clock_day3: false,
+            mm_clock_night1: false,
+            mm_clock_night2: false,
+            mm_clock_night3: false,
+
+        //progressive buffers
+            oot_progressive_sword: 0, //max 3
+            mm_progressive_sword: 0, //max 3
+            oot_progressive_hookshot: 0, //max 2
+            oot_progressive_ocarina: 0, //max 2
+            mm_progressive_ocarina: 0, //max 2
+        };
+
+        
+
 
     </script>
 </body>
