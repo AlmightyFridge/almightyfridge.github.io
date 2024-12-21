@@ -213,6 +213,7 @@ a:visited {
 
 #dungeonTracker{
     display:block;
+    visibility: hidden;
     position:fixed;
     top: 50%;
     left: 50%;

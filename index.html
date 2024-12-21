@@ -42,7 +42,7 @@
         <input type="button" id="topButton" class="button" value="To Top" onclick="document.documentElement.scrollTop = 0">
         <input type="button" id="saveButton" class="button" value="Save" onclick="saveSpoilerState()">
         <input type="button" id="loadButton" class="button" value="Load" onclick="loadSpoilerState()">
-        <input type="button" id="dungeonTrackerButton" class="button" value="Dungeons" onclick="buildDungeonTracker('OOTMM')">
+        <input type="button" id="dungeonTrackerButton" class="button" value="Dungeons" onclick="toggleDungeonTracker()">
         <input type="text" id="searchInput" placeholder="Find Locations" onkeyup="this.onchange()" onchange="searchLocations(this.value)">
         <div id="inventory"></div>
         
@@ -157,6 +157,7 @@
 
                 
                 buildTable(localCopy, randoVersion, seed);
+                buildDungeonTracker(randoVersion);
             }
             fr.readAsText(file.files[0]);
         }
@@ -203,6 +204,7 @@
             for (let i=0; i<locationArray.length; i++){
                 //console.log(locationArray[i]);
                 let newRow = document.createElement("TR");
+                newRow.classList.add("spoilerLogRow");
                 let appendBinary = true;
                 let removeBinary = false;
                 newRow.setAttribute("id", "row"+i);
@@ -371,31 +373,26 @@
                 return;
             }
             else{
+                //console.log(searchText);
                 let displayRow = true;
                 let locationClassName = "";
-                let rows = document.getElementsByTagName("tr");
+                let rows = document.getElementsByClassName("spoilerLogRow");
                 let locations = document.getElementsByClassName("locations");
+                console.log(locations.length);
                 for(let i=0; i<locations.length; i++){
                     displayRow = true;
                     locationClassName = locations[i].classList[(locations[i].classList.length - 1)].toLowerCase();
-                    if(locationClassName == "locations"){
-                        searchText.forEach((el) => {
-                            if (!locations[i].innerText.toLowerCase().includes(el)){
-                                if(!locations[i].classList.contains("locationHeader")){
-                                    displayRow = false;
-                                }
+
+                    searchText.forEach((el) => {
+                        if (!locations[i].innerText.toLowerCase().includes(el) && !locationClassName.includes(el)){
+                            //console.log("inside if statement");
+                            displayRow = false;
+                            if(locations[i].classList.contains("locationHeader")){
+                                displayRow = true;
                             }
-                        });
-                    }
-                    else{
-                        searchText.forEach((el) => {
-                            if (!locations[i].innerText.toLowerCase().includes(el) && !locationClassName.includes(el)){
-                                if(!locations[i].classList.contains("locationHeader")){
-                                    displayRow = false;
-                                }
-                            }
-                        });
-                    }
+                        }
+                    });
+
                     if(displayRow){
                         rows[i].style.display = "";
                     }
@@ -448,6 +445,10 @@
         }
 
         function buildDungeonTracker(randoVersion){
+            /*
+                so the idea here is that the table goes "dungeon entrance" > leads to "dungeon" > has "boss" > has "reward"
+                if the dungeon doesnt have a boss and a reward, don't display either of those cells.
+            */
             if(randoVersion != "OOTMM"){
                 return;
             }
@@ -458,45 +459,121 @@
                 "Ocean Spider House", "Pirate's Fortress", "Ikana Castle", "Beneath The Well Front", "Beneath The Well Back",
                 "Clock Tower"
             ];
+            let dungeonsWithBosses = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
+                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Woodfall Temple", "Snowhead Temple",
+                "Great Bay Temple", "Inverted Stone Tower Temple"]; //not useful here, but will be in the update function
+            let bossList = ["Gohma", "King Dodongo", "Barinade", "Phantom Ganon", "Volvagia", "Morpha", "Bongo Bongo", "Twinrova", "Odolwa", "Goht", "Gyorg", "Twinmold"];
             let dungeonRewardsList = ["Kokiri Emerald", "Goron Ruby", "Zora Sapphire", "Light Medallion", "Forest Medallion",
                 "Fire Medallion", "Water Medallion", "Shadow Medallion", "Spirit Medallion", "Odolwa's Remains", "Goht's Remains",
                 "Gyorg's Remains", "Twinmold's Remains"
             ];
             let newTable = document.createElement("table");
-            //let newRow = document.createElement("tr");
-            //let newCell = document.createElement("td");
+            let newRow = document.createElement("tr");
+            let cell1 = document.createElement("th");
+            cell1.innerText = "Entrance";
+
+            let cell2 = document.createElement("th");
+            cell2.innerText = "Leads To";
+
+            let cell3 = document.createElement("th");
+            cell3.innerText = "Boss";
+
+            let cell4 = document.createElement("th");
+            cell4.innerText = "Reward";
+
+            let cell5 = document.createElement("th");
+            cell5.innerText = "Boss Soul";
+            
+                       
+            newRow.classList.add("dungeonTrackerRow");
+            newRow.appendChild(cell1);
+            newRow.appendChild(cell2);
+            newRow.appendChild(cell3);
+            newRow.appendChild(cell4);
+            if(true){
+                newRow.appendChild(cell5);
+            }
+            newTable.appendChild(newRow);
 
             
-
             for(let i=0; i<dungeonsList.length; i++){
                 let newRow = document.createElement("tr");
-                let cell1 = document.createElement("td");
-                let cell2 = document.createElement("td");
+                let labelCell = document.createElement("td");
+                let dungeonSelectCell = document.createElement("td");
+                let bossSelectCell = document.createElement("td");
+                let rewardSelectCell = document.createElement("td");
+                let bossSoulCell = document.createElement("td");
 
-
-                let x = document.createElement("select");
-                x.name = `${dungeonsList[i]} Entrance`;
-                x.id = `entrance${i}`;
-                x.innerHTML += `<option value="-----">-----</option>`;
-
-                let y = document.createElement("label");
-                y.innerText = `${dungeonsList[i]}:`;
-
+                let el1 = document.createElement("select");
+                el1.name = `${dungeonsList[i]} Entrance`;
+                el1.id = `entrance${i}`;
+                el1.innerHTML += `<option value="?????">?????</option>`;
                 for(let z=0; z<dungeonsList.length; z++){
-                    x.innerHTML += `<option value="${dungeonsList[z]}">${dungeonsList[z]}</option>`;
+                    el1.innerHTML += `<option value="${dungeonsList[z]}">${dungeonsList[z]}</option>`;
                 }
-                cell1.appendChild(y);
-                cell2.appendChild(x);
 
-                newRow.appendChild(cell1);
-                newRow.appendChild(cell2);
+                let el2 = document.createElement("label");
+                el2.innerText = `${dungeonsList[i]}:`;
+
+                let el3 = document.createElement("select");
+                el3.name = `${bossList[i]} Boss`;
+                el3.id = `boss${i}`;
+                el3.innerHTML += `<option value="?????">?????</option>`;
+                for(let z=0; z<bossList.length; z++){
+                    el3.innerHTML += `<option value="${bossList[z]}">${bossList[z]}</option>`;
+                }
+
+                let el4 = document.createElement("select");
+                el4.name = `${dungeonRewardsList[i]} Reward`;
+                el4.id = `reward${i}`;
+                el4.innerHTML += `<option value="?????">?????</option>`;
+                for(let z=0; z<dungeonRewardsList.length; z++){
+                    el4.innerHTML += `<option value="${dungeonRewardsList[z]}">${dungeonRewardsList[z]}</option>`;
+                }
+
+                
+                let el5 = document.createElement("input");
+                el5.type = "checkbox";
+                
+
+                newRow.classList.add("dungeonTrackerRow");                
+                
+                labelCell.appendChild(el2);
+                dungeonSelectCell.appendChild(el1);
+                bossSelectCell.appendChild(el3);
+                rewardSelectCell.appendChild(el4);
+                if(true){
+                    bossSoulCell.appendChild(el5);
+                }
+
+                newRow.appendChild(labelCell);
+                newRow.appendChild(dungeonSelectCell);
+                newRow.appendChild(bossSelectCell);
+                newRow.appendChild(rewardSelectCell);
+                if(true){
+                    newRow.appendChild(bossSoulCell);
+                }
                 
                 newTable.appendChild(newRow);
-
-                document.getElementById("dungeonTracker").appendChild(newTable);
             }
-            
+            document.getElementById("dungeonTracker").appendChild(newTable);
         }
+
+        function toggleDungeonTracker(){
+            
+            if(document.getElementById("dungeonTracker").style.visibility == "hidden" || document.getElementById("dungeonTracker").style.visibility == ""){
+                document.getElementById("dungeonTracker").style.visibility = "visible";
+                console.log("in toggleDungeonTracker, display was none");
+            }
+            else{
+                document.getElementById("dungeonTracker").style.visibility = "hidden"
+                console.log("in toggleDungeonTracker, display was block");
+            }
+        }
+
+        /*
+            need a function here that checks on selecting a dungeon if the dungeon selected is one of the dungeons with bosses. if yes, display the boss and reward cells. 
+        */
 
         function getStarterItems(log){
             //Starting Items
