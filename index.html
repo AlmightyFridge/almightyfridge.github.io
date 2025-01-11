@@ -49,10 +49,10 @@
         
 
     </div>
-    <div id="dungeonTracker"></div>
+
     <div id="tableDiv"></div>
 
-    <div id="blurDiv">
+    <div id="blurDiv1">
         <div id="popupDiv">
             <form action="javascript:slotNameSubmitted(AP_SlotNameInput.value)">
                 <h4>Enter your slot name</h4>
@@ -62,6 +62,13 @@
             </form>
         </div>
     </div>
+
+    <div id="blurDiv2" onclick="toggleDungeonTracker()"></div>
+    <div id="dungeonTracker" onclick=""></div>
+    
+    
+
+    
     
 
     <script>
@@ -89,6 +96,7 @@
                 let seed = "";
                 let pos = 0;
                 let endpos = 0;
+                let randomDungeonOptions = "";
 
                 if (localCopy.search("\":seed_url\":") != -1){
                     randoVersion = "OOTR";
@@ -116,6 +124,7 @@
                     pos = localCopy.search("Location List");
                     localCopy = localCopy.slice(pos);
                     getStarterItems(fr.result);
+                    randomDungeonOptions = getRandomizedDungeons(fr.result);
                 }
                 else if(localCopy.search("\"locations") != -1){
                     randoVersion = "OOTSHIP";
@@ -157,7 +166,7 @@
 
                 
                 buildTable(localCopy, randoVersion, seed);
-                buildDungeonTracker(randoVersion);
+                buildDungeonTracker(randoVersion, randomDungeonOptions);
             }
             fr.readAsText(file.files[0]);
         }
@@ -444,7 +453,50 @@
             }
         }
 
-        function buildDungeonTracker(randoVersion){
+        function getRandomizedDungeons(log){
+            /*
+            erBoss: none/own game/full
+            erDungeons: none/own game/full
+            erMajorDungeons: true/false
+            erMinorDungeons: true/false
+            erGanonCastle: true/false
+            erGanonTower: true/false
+            erMoon: true/false (this is clock tower option)
+            erSpiderHouses: true/false
+            erPirateFortress: true/false
+            erBeneathWell: true/false
+            erIkanaCastle: true/false
+            erSecretShrine: true/false
+            soulsBossOot: true/false
+            soulsBossMm: true/false
+            */
+
+            const searchParameters = ["erBoss","erDungeons","erMajorDungeons","erMinorDungeons","erGanonCastle","erGanonTower",
+                "erMoon","erSpiderHouses","erPirateFortress","erBeneathWell","erIkanaCastle","erSecretShrine", "soulsBossOot", 
+                "soulsBossMm"];
+
+            let dungeonOptions = {};
+
+            let x = 0;
+
+            for(let i = 0; i < searchParameters.length; i++){
+                let startPos = log.search(searchParameters[i]);
+                let endPos = log.indexOf("\n", startPos); /// THIS SOLVES THE LOOKING FOR END OF LINE PROBLEM !!!
+
+                x = log.slice(startPos, endPos).trim();
+                //console.log(x);
+                
+                let y = x.split(":");
+                Object.defineProperty(dungeonOptions, y[0], {value:y[1].trim()});
+                  
+            }
+            console.log("the dungeon options are:")
+            console.log(dungeonOptions);
+
+            return(dungeonOptions);
+        }
+
+        function buildDungeonTracker(randoVersion, dungeonOptions){
             /*
                 so the idea here is that the table goes "dungeon entrance" > leads to "dungeon" > has "boss" > has "reward"
                 if the dungeon doesnt have a boss and a reward, don't display either of those cells.
@@ -452,22 +504,60 @@
             if(randoVersion != "OOTMM"){
                 return;
             }
-            let dungeonsList = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
-                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Ganon's Castle", "Ganon's Tower", 
-                "Bottom of the Well", "Ice Cavern", "Gerudo Training Grounds", "Woodfall Temple", "Snowhead Temple",
-                "Great Bay Temple", "Stone Tower Temple", "Inverted Stone Tower Temple", "Swamp Spider House", 
-                "Ocean Spider House", "Pirate's Fortress", "Ikana Castle", "Beneath The Well Front", "Beneath The Well Back",
-                "Clock Tower"
-            ];
-            let dungeonsWithBosses = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
-                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Woodfall Temple", "Snowhead Temple",
-                "Great Bay Temple", "Inverted Stone Tower Temple"]; //not useful here, but will be in the update function
+
+            //this deletes an old table if an a new file is uploaded without refreshing
+            if(document.getElementById("dungeonTable")){
+                document.getElementById("dungeonTable").remove();
+            }
+                        
+            /// Sets up the dungeons from the options ///////////////////////////////////
+            let dungeonsList = [];
+
+            if(dungeonOptions.erMajorDungeons == "true"){
+                //console.log("this works");
+                dungeonsList.push("Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
+                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple");
+            }
+            if(dungeonOptions.erMinorDungeons == "true"){
+                dungeonsList.push("Bottom of the Well", "Ice Cavern", "Gerudo Training Grounds");
+            }
+            if(dungeonOptions.erGanonCastle == "true"){
+                dungeonsList.push("Ganon's Castle");
+            }
+            if(dungeonOptions.erGanonTower == "true"){
+                dungeonsList.push("Ganon's Tower");
+            }
+            if(dungeonOptions.erMajorDungeons == "true"){
+                dungeonsList.push("Woodfall Temple", "Snowhead Temple", "Great Bay Temple", "Stone Tower Temple", "Inverted Stone Tower Temple");
+            }
+            if(dungeonOptions.erSpiderHouses == "true"){
+                dungeonsList.push("Swamp Spider House", "Ocean Spider House");
+            }
+            if(dungeonOptions.erPirateFortress == "true"){
+                dungeonsList.push("Pirate's Fortress");
+            }
+            if(dungeonOptions.erBeneathWell == "true"){
+                dungeonsList.push("Beneath The Well Front", "Beneath The Well Back");
+            }
+            if(dungeonOptions.erIkanaCastle == "true"){
+                dungeonsList.push("Ikana Castle");
+            }
+            if(dungeonOptions.erSecretShrine == "true"){
+                dungeonsList.push("Secret Shrine");
+            }
+            if(dungeonOptions.erMoon == "true"){
+                dungeonsList.push("Clock Tower");
+            }
+
             let bossList = ["Gohma", "King Dodongo", "Barinade", "Phantom Ganon", "Volvagia", "Morpha", "Bongo Bongo", "Twinrova", "Odolwa", "Goht", "Gyorg", "Twinmold"];
+
             let dungeonRewardsList = ["Kokiri Emerald", "Goron Ruby", "Zora Sapphire", "Light Medallion", "Forest Medallion",
                 "Fire Medallion", "Water Medallion", "Shadow Medallion", "Spirit Medallion", "Odolwa's Remains", "Goht's Remains",
                 "Gyorg's Remains", "Twinmold's Remains"
             ];
+
             let newTable = document.createElement("table");
+            newTable.id = "dungeonTable";
             let newRow = document.createElement("tr");
             let cell1 = document.createElement("th");
             cell1.innerText = "Entrance";
@@ -490,7 +580,7 @@
             newRow.appendChild(cell2);
             newRow.appendChild(cell3);
             newRow.appendChild(cell4);
-            if(true){
+            if(dungeonOptions.soulsBossOOT == "true" || dungeonOptions.soulsBossMm == "true"){
                 newRow.appendChild(cell5);
             }
             newTable.appendChild(newRow);
@@ -505,8 +595,10 @@
                 let bossSoulCell = document.createElement("td");
 
                 let el1 = document.createElement("select");
-                el1.name = `${dungeonsList[i]} Entrance`;
-                el1.id = `entrance${i}`;
+                el1.name = `${dungeonsList[i]} Dungeon`;
+                el1.id = `dungeon${i}`;
+                el1.classList.add("dungeonSelect");
+                el1.setAttribute("onchange", "dtHandler(this.id, 'dungeon')");
                 el1.innerHTML += `<option value="?????">?????</option>`;
                 for(let z=0; z<dungeonsList.length; z++){
                     el1.innerHTML += `<option value="${dungeonsList[z]}">${dungeonsList[z]}</option>`;
@@ -518,7 +610,10 @@
                 let el3 = document.createElement("select");
                 el3.name = `${bossList[i]} Boss`;
                 el3.id = `boss${i}`;
-                el3.innerHTML += `<option value="?????">?????</option>`;
+                el3.classList.add("bossSelect");
+                el3.setAttribute("onchange", "dtHandler(this.id, 'boss')");
+                el3.innerHTML += `<option value="N/A" disabled hidden>N/A</option>`;
+                el3.innerHTML += `<option value="?????" default>?????</option>`;
                 for(let z=0; z<bossList.length; z++){
                     el3.innerHTML += `<option value="${bossList[z]}">${bossList[z]}</option>`;
                 }
@@ -526,23 +621,26 @@
                 let el4 = document.createElement("select");
                 el4.name = `${dungeonRewardsList[i]} Reward`;
                 el4.id = `reward${i}`;
+                el4.classList.add("rewardSelect");
+                el4.setAttribute("onchange", "dtHandler(this.id, 'reward')");
+                el4.innerHTML += `<option value="N/A" disabled hidden>N/A</option>`;
                 el4.innerHTML += `<option value="?????">?????</option>`;
                 for(let z=0; z<dungeonRewardsList.length; z++){
                     el4.innerHTML += `<option value="${dungeonRewardsList[z]}">${dungeonRewardsList[z]}</option>`;
                 }
 
-                
                 let el5 = document.createElement("input");
                 el5.type = "checkbox";
+                el5.id = `bossSoul${i}`
+                el5.classList.add("bossSoulCheckbox");
                 
-
                 newRow.classList.add("dungeonTrackerRow");                
                 
                 labelCell.appendChild(el2);
                 dungeonSelectCell.appendChild(el1);
                 bossSelectCell.appendChild(el3);
                 rewardSelectCell.appendChild(el4);
-                if(true){
+                if(dungeonOptions.soulsBossOOT == "true" || dungeonOptions.soulsBossMm == "true"){
                     bossSoulCell.appendChild(el5);
                 }
 
@@ -550,30 +648,114 @@
                 newRow.appendChild(dungeonSelectCell);
                 newRow.appendChild(bossSelectCell);
                 newRow.appendChild(rewardSelectCell);
-                if(true){
+                if(dungeonOptions.soulsBossOOT == "true" || dungeonOptions.soulsBossMm == "true"){
                     newRow.appendChild(bossSoulCell);
                 }
                 
                 newTable.appendChild(newRow);
             }
             document.getElementById("dungeonTracker").appendChild(newTable);
+
         }
 
         function toggleDungeonTracker(){
             
             if(document.getElementById("dungeonTracker").style.visibility == "hidden" || document.getElementById("dungeonTracker").style.visibility == ""){
                 document.getElementById("dungeonTracker").style.visibility = "visible";
-                console.log("in toggleDungeonTracker, display was none");
+                document.getElementById("blurDiv2").style.display = "block";
+                document.body.classList.add("stopScrolling");
             }
             else{
                 document.getElementById("dungeonTracker").style.visibility = "hidden"
-                console.log("in toggleDungeonTracker, display was block");
+                document.getElementById("blurDiv2").style.display = "none";
+                document.body.classList.remove("stopScrolling");
             }
         }
 
-        /*
-            need a function here that checks on selecting a dungeon if the dungeon selected is one of the dungeons with bosses. if yes, display the boss and reward cells. 
-        */
+        function dtHandler(elid, state){ //state can be "dungeon", "boss", or "reward"
+            
+            //console.log(elid);
+
+            if (document.getElementById(elid) == null){
+                return;
+            }
+
+            let hideOption = document.getElementById(elid).options[document.getElementById(elid).selectedIndex].text;
+                //console.log(hideOption);
+                let selectGroup = "";
+                var selectedOptions = [];
+                if(state == "dungeon"){
+                    selectGroup = document.getElementsByClassName("dungeonSelect");
+                }
+                else if(state == "boss"){
+                    selectGroup = document.getElementsByClassName("bossSelect");
+                    selectedOptions.push("N/A");
+                }
+                else if(state == "reward"){
+                    selectGroup = document.getElementsByClassName("rewardSelect");
+                    selectedOptions.push("N/A");
+                }
+                
+                for (let a = 0; a<selectGroup.length; a++){
+                    if(selectGroup[a].options[selectGroup[a].selectedIndex].value != "?????"){
+                        selectedOptions.push(selectGroup[a].options[selectGroup[a].selectedIndex].value);
+                    }
+                }
+
+                for (let a = 0; a<selectGroup.length; a++){
+                    if(document.getElementById(elid).value != "?????"){                       
+                        if(selectGroup[a].id != elid){
+                            for(let b = 0; b<selectGroup[a].options.length; b++){
+                                //console.log(selectGroup[a].options[b]);
+                                if(selectGroup[a].options[b].value == hideOption){
+                                    selectGroup[a].options[b].hidden = true;
+                                    
+                                }
+                                if(!selectedOptions.includes(selectGroup[a].options[b].value)){
+                                    selectGroup[a].options[b].hidden = false;
+                                }   
+                            }
+                        }
+                    }      
+                }
+
+                //console.log(selectedOptions);
+
+            if(state == "dungeon"){
+                let dungeonsWithBosses = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
+                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Woodfall Temple", "Snowhead Temple",
+                "Great Bay Temple", "Inverted Stone Tower Temple", "Ikana Castle"]; 
+                
+                let x = elid.slice(7, elid.length);
+                
+                for (let i in dungeonsWithBosses){
+                    if (document.getElementById(elid).value == dungeonsWithBosses[i] || document.getElementById(elid).value == "?????"){
+                        //need to add something here that unhides the boss or reward option selected if it's changed to N/A
+                        
+                        document.getElementById(`boss${x}`).disabled = false;
+                        document.getElementById(`reward${x}`).disabled = false;
+                        document.getElementById(`bossSoul${x}`).disabled = false;
+
+                        if(document.getElementById(`reward${x}`).selectedIndex == 0){
+                            document.getElementById(`reward${x}`).selectedIndex = 1;
+                        }
+                        if(document.getElementById(`boss${x}`).selectedIndex == 0){
+                            document.getElementById(`boss${x}`).selectedIndex = 1;
+                        }
+                        return;
+                    }   
+                }                
+
+                document.getElementById(`boss${x}`).disabled = true;
+                document.getElementById(`boss${x}`).selectedIndex = 0;
+                document.getElementById(`reward${x}`).disabled = true;
+                document.getElementById(`reward${x}`).selectedIndex = 0;
+                document.getElementById(`bossSoul${x}`).disabled = true;
+                document.getElementById(`bossSoul${x}`).checked = false; 
+                dtHandler(elid, "reward");
+                dtHandler(elid, "boss");               
+            }
+        }
 
         function getStarterItems(log){
             //Starting Items
@@ -591,17 +773,17 @@
             })
             console.log(startItemArray);
             for(let i=0; i<startItemArray.length; i++){
-                console.log(i);
+                //console.log(i);
                 //console.log(startItemArray);
                 a = startItemArray[i].split(/:(?!.*:.*)/s); //removes everything after the colon
-                console.log(a);
-                console.log(startItemArray[i]);
+                //console.log(a);
+                //console.log(startItemArray[i]);
                 startItemArray[i] = a[0];
                 handleInventory(startItemArray[i], "starter");
                 
                 
             }
-            console.log("the starter item array length is: " + startItemArray.length);
+            //console.log("the starter item array length is: " + startItemArray.length);
         }
 
         function handleInventory(inventoryItem, state){ //state can be add, remove, or starter. starter is a more permanent add.
@@ -724,12 +906,12 @@
 
         function promptSlotName(){
             document.getElementById("popupDiv").style.display = "block";
-            document.getElementById("blurDiv").style.display = "block";
+            document.getElementById("blurDiv1").style.display = "block";
         }
 
         function slotNameSubmitted(slotName){
             document.getElementById("popupDiv").style.display = "none";
-            document.getElementById("blurDiv").style.display = "none";
+            document.getElementById("blurDiv1").style.display = "none";
             if(slotName.trim() == ""){
                 return;
             }
