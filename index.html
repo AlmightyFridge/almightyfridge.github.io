@@ -413,23 +413,49 @@
         }
 
         function saveSpoilerState(){
-            let localFile = [];
+            let localFile1 = [];
+            let localFile2 = [];
             let seed = document.getElementById("infoDiv").innerText;
             let x = document.querySelectorAll("td.items");
             for(i=0; i<x.length; i++){
                 if (x[i].classList.contains("itemsHidden")){
-                    localFile.push(0);
+                    localFile1.push(0);
                 }
                 if (x[i].classList.contains("itemsRevealed")){
-                    localFile.push(1);  
+                    localFile1.push(1);  
                 }
             }
-            localStorage.setItem(seed, JSON.stringify(localFile));
+
+            //finding all dungeon, boss, reward, boss soul indexes
+            let ds = document.querySelectorAll("select.dungeonSelect");
+            let bs = document.querySelectorAll("select.bossSelect");
+            let rs = document.querySelectorAll("select.rewardSelect");
+            let sc = document.querySelectorAll("input.bossSoulCheckbox");
+
+            console.log(ds);
+
+            //recording the indexes
+            for(let i=0; i < ds.length; i++){
+                //console.log(ds[i].id);
+                localFile2.push(ds[i].selectedIndex);
+            }
+            for(let i=0; i < bs.length; i++){
+                localFile2.push(bs[i].selectedIndex);
+            }
+            for(let i=0; i < rs.length; i++){
+                localFile2.push(rs[i].selectedIndex);
+            }
+            for(let i=0; i < sc.length; i++){
+                localFile2.push(sc[i].checked);
+            }
+            
+            localStorage.setItem(seed + "-tracker", JSON.stringify(localFile2));
+            localStorage.setItem(seed + "-items", JSON.stringify(localFile1));
         }
 
         function loadSpoilerState(){
             let seed = document.getElementById("infoDiv").innerText;
-            let spoilerState = JSON.parse(localStorage.getItem(seed));
+            let spoilerState = JSON.parse(localStorage.getItem(seed+"-items"));
             if (spoilerState === null){
                 return;
             }
@@ -451,6 +477,46 @@
                     console.log("spoiler state was neither 1 or 0")
                 }
             }
+
+            dungeonTrackerState = JSON.parse(localStorage.getItem(seed+"-tracker"));
+
+            let ds = document.querySelectorAll("select.dungeonSelect");
+            let bs = document.querySelectorAll("select.bossSelect");
+            let rs = document.querySelectorAll("select.rewardSelect");
+            let sc = document.querySelectorAll("input.bossSoulCheckbox");
+
+            //spoiler log should never change so this should work even though it looks sketchy VVV
+            let counter = 0;
+
+            for(let i=0; i < ds.length; i++){
+                ds[i].selectedIndex = dungeonTrackerState[counter];
+                dtHandler(ds[i].id, "dungeon");
+                counter++;
+            }
+            for(let i=0; i < bs.length; i++){
+                bs[i].selectedIndex = dungeonTrackerState[counter];
+                dtHandler(bs[i].id, "boss");
+                if(bs[i].selectedIndex == 0){
+                    bs[i].disabled = true;
+                }
+                counter++;
+            }
+            for(let i=0; i < rs.length; i++){
+                rs[i].selectedIndex = dungeonTrackerState[counter];
+                dtHandler(rs[i].id, "reward");
+                if(rs[i].selectedIndex == 0){
+                    rs[i].disabled = true;
+                }
+                counter++;
+            }
+            for(let i=0; i < sc.length; i++){
+                sc[i].checked = dungeonTrackerState[counter];
+                counter++;
+                if(bs[i].selectedIndex == 0){
+                    sc[i].disabled = true;
+                }
+            }
+            // ^^^
         }
 
         function getRandomizedDungeons(log){
@@ -750,7 +816,7 @@
                         document.getElementById(elid).hidden = false;
 
                         if(document.getElementsByClassName("bossSoulCheckbox").length > 0){
-                            console.log(document.getElementsByClassName("bossSoulCheckbox"));
+                            //console.log(document.getElementsByClassName("bossSoulCheckbox"));
                             document.getElementById(`bossSoul${x}`).disabled = false;
                         }
 
@@ -806,7 +872,7 @@
                 }
             }
 
-            //hdies all selected options from every other dropdown in the group
+            //hides all selected options from every other dropdown in the group
             for (let a = 0; a<selectGroup.length; a++){
                 if(selectGroup[a].id != elid){
                     for(let b = 0; b<selectGroup[a].options.length; b++){
