@@ -514,7 +514,6 @@
             let dungeonsList = [];
 
             if(dungeonOptions.erMajorDungeons == "true"){
-                //console.log("this works");
                 dungeonsList.push("Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
                 "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple");
             }
@@ -549,7 +548,9 @@
                 dungeonsList.push("Clock Tower");
             }
 
-            let bossList = ["Gohma", "King Dodongo", "Barinade", "Phantom Ganon", "Volvagia", "Morpha", "Bongo Bongo", "Twinrova", "Odolwa", "Goht", "Gyorg", "Twinmold"];
+            let bossList = ["Gohma", "King Dodongo", "Barinade", "Phantom Ganon", "Volvagia", "Morpha", "Bongo Bongo", 
+                "Twinrova", "Odolwa", "Goht", "Gyorg", "Twinmold", "Igos"
+            ];
 
             let dungeonRewardsList = ["Kokiri Emerald", "Goron Ruby", "Zora Sapphire", "Light Medallion", "Forest Medallion",
                 "Fire Medallion", "Water Medallion", "Shadow Medallion", "Spirit Medallion", "Odolwa's Remains", "Goht's Remains",
@@ -567,6 +568,7 @@
 
             let cell3 = document.createElement("th");
             cell3.innerText = "Boss";
+            cell3.classList.add("bossRando-" + dungeonOptions.erBoss);
 
             let cell4 = document.createElement("th");
             cell4.innerText = "Reward";
@@ -580,7 +582,7 @@
             newRow.appendChild(cell2);
             newRow.appendChild(cell3);
             newRow.appendChild(cell4);
-            if(dungeonOptions.soulsBossOOT == "true" || dungeonOptions.soulsBossMm == "true"){
+            if(dungeonOptions.soulsBossOot == "true" || dungeonOptions.soulsBossMm == "true"){
                 newRow.appendChild(cell5);
             }
             newTable.appendChild(newRow);
@@ -640,7 +642,7 @@
                 dungeonSelectCell.appendChild(el1);
                 bossSelectCell.appendChild(el3);
                 rewardSelectCell.appendChild(el4);
-                if(dungeonOptions.soulsBossOOT == "true" || dungeonOptions.soulsBossMm == "true"){
+                if(dungeonOptions.soulsBossOot == "true" || dungeonOptions.soulsBossMm == "true"){
                     bossSoulCell.appendChild(el5);
                 }
 
@@ -648,7 +650,7 @@
                 newRow.appendChild(dungeonSelectCell);
                 newRow.appendChild(bossSelectCell);
                 newRow.appendChild(rewardSelectCell);
-                if(dungeonOptions.soulsBossOOT == "true" || dungeonOptions.soulsBossMm == "true"){
+                if(dungeonOptions.soulsBossOot == "true" || dungeonOptions.soulsBossMm == "true"){
                     newRow.appendChild(bossSoulCell);
                 }
                 
@@ -673,87 +675,150 @@
         }
 
         function dtHandler(elid, state){ //state can be "dungeon", "boss", or "reward"
-            
-            //console.log(elid);
 
             if (document.getElementById(elid) == null){
                 return;
             }
 
+            let dungeonsWithBosses = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
+                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Woodfall Temple", "Snowhead Temple",
+                "Great Bay Temple", "Inverted Stone Tower Temple", "Ikana Castle"
+            ]; 
+
+            let bossList = ["Gohma", "King Dodongo", "Barinade", "Phantom Ganon", "Volvagia", "Morpha", "Bongo Bongo", 
+                "Twinrova", "Odolwa", "Goht", "Gyorg", "Twinmold", "Igos"
+            ];
+
             let hideOption = document.getElementById(elid).options[document.getElementById(elid).selectedIndex].text;
-                //console.log(hideOption);
-                let selectGroup = "";
-                var selectedOptions = [];
-                if(state == "dungeon"){
-                    selectGroup = document.getElementsByClassName("dungeonSelect");
-                }
-                else if(state == "boss"){
-                    selectGroup = document.getElementsByClassName("bossSelect");
-                    selectedOptions.push("N/A");
-                }
-                else if(state == "reward"){
-                    selectGroup = document.getElementsByClassName("rewardSelect");
-                    selectedOptions.push("N/A");
-                }
                 
-                for (let a = 0; a<selectGroup.length; a++){
-                    if(selectGroup[a].options[selectGroup[a].selectedIndex].value != "?????"){
-                        selectedOptions.push(selectGroup[a].options[selectGroup[a].selectedIndex].value);
-                    }
-                }
+            let selectGroup = "";
+            var selectedOptions = [];
 
-                for (let a = 0; a<selectGroup.length; a++){
-                    if(document.getElementById(elid).value != "?????"){                       
-                        if(selectGroup[a].id != elid){
-                            for(let b = 0; b<selectGroup[a].options.length; b++){
-                                //console.log(selectGroup[a].options[b]);
-                                if(selectGroup[a].options[b].value == hideOption){
-                                    selectGroup[a].options[b].hidden = true;
-                                    
-                                }
-                                if(!selectedOptions.includes(selectGroup[a].options[b].value)){
-                                    selectGroup[a].options[b].hidden = false;
-                                }   
-                            }
-                        }
-                    }      
-                }
+            let dungeonGroup = document.getElementsByClassName("dungeonSelect");
+            let bossGroup = document.getElementsByClassName("bossSelect");
+            let rewardGroup = document.getElementsByClassName("rewardSelect");
 
-                //console.log(selectedOptions);
+            let groupGroups = [dungeonGroup, bossGroup, rewardGroup];
 
             if(state == "dungeon"){
-                let dungeonsWithBosses = ["Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Forest Temple", 
-                "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Woodfall Temple", "Snowhead Temple",
-                "Great Bay Temple", "Inverted Stone Tower Temple", "Ikana Castle"]; 
+                selectGroup = dungeonGroup;
+            }
+            else if(state == "boss"){
+                selectGroup = bossGroup;
+            }
+            else if(state == "reward"){
+                selectGroup = rewardGroup;
+            }
+
+            dtOptionsHandler(selectGroup, hideOption, elid);
+
+            let x = 0;
+
+            if(state == "boss"){
+                x = elid.slice(4, elid.length);
+
+                //Igos edge case
+                if(document.getElementById(elid).value == "Igos"){
+                    document.getElementById(`reward${x}`).selectedIndex = 0;
+                    document.getElementById(`reward${x}`).disabled = true;
+                }
                 
-                let x = elid.slice(7, elid.length);
-                
+                //locks the dungeon to match the boss if boss rando is off
+                if(document.getElementsByClassName("bossRando-none").length == 1){  
+                    for (let i in bossList){
+                        if (document.getElementById(elid).value == bossList[i]){
+                            document.getElementById(`dungeon${x}`).value = dungeonsWithBosses[i];
+
+                            dtOptionsHandler(dungeonGroup, document.getElementById(`dungeon${x}`).value, document.getElementById(`dungeon${x}`).id);
+                        }
+                    }
+                }
+            }
+            
+            if(state == "dungeon"){
+
+                x = elid.slice(7, elid.length);
+
                 for (let i in dungeonsWithBosses){
                     if (document.getElementById(elid).value == dungeonsWithBosses[i] || document.getElementById(elid).value == "?????"){
-                        //need to add something here that unhides the boss or reward option selected if it's changed to N/A
                         
+                        //enables the boss and reward dropdowns to ***
                         document.getElementById(`boss${x}`).disabled = false;
                         document.getElementById(`reward${x}`).disabled = false;
-                        document.getElementById(`bossSoul${x}`).disabled = false;
+                        document.getElementById(`boss${x}`).hidden = false;
+                        document.getElementById(`reward${x}`).hidden = false;
+                        document.getElementById(elid).hidden = false;
+
+                        if(document.getElementsByClassName("bossSoulCheckbox").length > 0){
+                            console.log(document.getElementsByClassName("bossSoulCheckbox"));
+                            document.getElementById(`bossSoul${x}`).disabled = false;
+                        }
 
                         if(document.getElementById(`reward${x}`).selectedIndex == 0){
                             document.getElementById(`reward${x}`).selectedIndex = 1;
                         }
-                        if(document.getElementById(`boss${x}`).selectedIndex == 0){
+                        if(document.getElementById(`boss${x}`).selectedIndex == 0 || document.getElementsByClassName("bossRando-none").length == 1){
                             document.getElementById(`boss${x}`).selectedIndex = 1;
                         }
+                        //****************************************
+
+                        //locks the boss to original boss if boss rando is off
+                        if(document.getElementsByClassName("bossRando-none").length == 1 && document.getElementById(elid).value == dungeonsWithBosses[i]){
+                            document.getElementById(`boss${x}`).value = bossList[i];
+                            dtOptionsHandler(bossGroup, document.getElementById(`boss${x}`).value, document.getElementById(`boss${x}`).id);
+                        }
+
+                        //Ikana castle edge case
+                        if(dungeonsWithBosses[i] == "Ikana Castle"){
+                            document.getElementById(`reward${x}`).selectedIndex = 0;
+                            document.getElementById(`reward${x}`).disabled = true;
+                        }
+
                         return;
                     }   
                 }                
 
+                //if a dungeon was selected not in the dungeonsWithBosses list it ends up here
+                //setting boss and reward and soul to N/A and disabling them
                 document.getElementById(`boss${x}`).disabled = true;
                 document.getElementById(`boss${x}`).selectedIndex = 0;
                 document.getElementById(`reward${x}`).disabled = true;
                 document.getElementById(`reward${x}`).selectedIndex = 0;
-                document.getElementById(`bossSoul${x}`).disabled = true;
-                document.getElementById(`bossSoul${x}`).checked = false; 
-                dtHandler(elid, "reward");
-                dtHandler(elid, "boss");               
+                if(document.getElementsByClassName("bossSoulCheckbox").length > 0){
+                    document.getElementById(`bossSoul${x}`).disabled = true;
+                    document.getElementById(`bossSoul${x}`).checked = false; 
+                }
+                
+                //updates the options after changing dropdowns to N/A
+                dtOptionsHandler(bossGroup, document.getElementById(`boss${x}`).value, document.getElementById(`boss${x}`).id);
+                dtOptionsHandler(rewardGroup, document.getElementById(`reward${x}`).value, document.getElementById(`reward${x}`).id);            
+            }
+        }
+
+        function dtOptionsHandler(selectGroup, hideOption, elid){
+
+            selectedOptions = ["N/A"];
+
+            //grabs all currently selected options from the group
+            for (let a = 0; a<selectGroup.length; a++){
+                if(selectGroup[a].options[selectGroup[a].selectedIndex].value != "?????"){
+                    selectedOptions.push(selectGroup[a].options[selectGroup[a].selectedIndex].value);
+                }
+            }
+
+            //hdies all selected options from every other dropdown in the group
+            for (let a = 0; a<selectGroup.length; a++){
+                if(selectGroup[a].id != elid){
+                    for(let b = 0; b<selectGroup[a].options.length; b++){
+                        if(selectGroup[a].options[b].value == hideOption){
+                            selectGroup[a].options[b].hidden = true;
+                            
+                        }
+                        if(!selectedOptions.includes(selectGroup[a].options[b].value)){
+                            selectGroup[a].options[b].hidden = false;
+                        }   
+                    }
+                }    
             }
         }
 
@@ -767,23 +832,18 @@
             let startItemArray = [];
 
             x = log.split("\n").forEach(line => {
-                //y = line.split(/:(.*)/s);
                 line = line.trim();
                 startItemArray.push(line);
             })
             console.log(startItemArray);
             for(let i=0; i<startItemArray.length; i++){
-                //console.log(i);
-                //console.log(startItemArray);
                 a = startItemArray[i].split(/:(?!.*:.*)/s); //removes everything after the colon
-                //console.log(a);
-                //console.log(startItemArray[i]);
+
                 startItemArray[i] = a[0];
                 handleInventory(startItemArray[i], "starter");
                 
                 
             }
-            //console.log("the starter item array length is: " + startItemArray.length);
         }
 
         function handleInventory(inventoryItem, state){ //state can be add, remove, or starter. starter is a more permanent add.
