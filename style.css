@@ -1,0 +1,259 @@
+/* need to make media view width for >701 and <700 */
+
+body{
+    font-family: "Open Sans", sans-serif;
+}
+
+td a{
+    height:100%;
+    display: block;
+    padding-bottom: 0px;
+    overflow: hidden;
+}
+
+p{
+    height:29px;
+    margin:0;
+    line-height:36px;
+}
+
+tr{
+    height:29px;
+}
+
+.items{
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+.itemsHidden, .itemsHidden a, .itemsHidden a:visited, .itemsHidden a:link{
+    color: black;
+    background-color: black;
+    text-decoration:none;
+
+}
+
+.items, .locations{
+    border-bottom: 1px solid black;
+
+}
+
+.locations{
+    width:60%;
+}
+
+.locations a:link {
+    color: black;
+    text-decoration:none;
+}
+.locations a:hover {
+    font-weight: bold;
+}
+
+a:visited {
+    color: black
+}
+
+.itemsRevealed{
+    border-bottom: 1px solid black;
+}
+
+.itemsRevealed, .itemsRevealed a:visited, .itemsRevealed a:link {
+    background-color: white;
+    color: black;
+    text-decoration:none;
+    
+}
+
+.itemsNull{
+    background-color: white;
+    border-color:black;
+    border-style:solid;
+    border-width: 1pt;
+    display: none;
+}
+
+.locationHeader, .locationHeader a:hover{
+    font-size:14pt;
+    font-weight:bold;
+    height: 36px;
+    border-style:none;
+    line-height:50px;
+    color:black;
+    display:inline;
+    
+
+}
+
+#HeaderDiv{
+    position:relative;
+    margin: 20px;
+    display:flex;
+    flex-flow:row wrap;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+#headerDiv > *{
+    flex-basis: 100%;
+}
+
+#titleDiv{
+    flex: 1 0 100%;
+    text-align: center;
+}
+
+#inputDiv{
+    position:relative;
+    display: grid;
+    width: 100%;
+    min-width: 210px;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#inputButton{
+    grid-column: 1;
+    grid-row: 2;
+    padding: 16px;
+    font-size: 14pt;
+    margin: 2px;
+    width: 200px;
+    justify-self: center;
+}
+
+.label{
+    grid-column: 1;
+    grid-row: 1;
+    
+}
+
+#infoDiv{
+    display:grid;
+    width:100%;
+    grid-template-columns: minmax(210px, 20%) minmax(280px, 60%) minmax(110px, 20%);
+}
+
+#errorDiv, #seedDiv{
+
+    display: inline-block;
+    overflow-x:visible;
+    margin: 10px;
+    grid-column: 2;
+    grid-row: 1;
+    word-break: break-all;
+
+}
+
+#seedDiv p{
+    line-height: 20px;
+    display: grid;
+    justify-content: center;
+}
+
+#randoDet{
+    display: grid;
+    text-align: right;
+    grid-column: 3;
+    grid-row: 1;
+    margin: 2px;
+}
+
+#tableDiv{
+    display:flex;
+}
+
+#tableDiv table{
+    width: 80vw;
+    color:black;
+    
+}
+
+#buttonDiv{
+    display:flex;
+    position:sticky;
+    flex-wrap:wrap;
+    right:0px;
+    top:10px;
+    float:right;
+    margin: 5px;
+    width: 18vw;
+    justify-content: center;
+    min-width: 225px;
+}
+
+.button{
+    display:flex;
+    position:relative;
+    padding: 16px;
+    font-size: 14pt;
+    margin: 2px;
+}
+
+
+
+.hide{
+    display: none;
+}
+
+#searchInput{
+    font-size: 14pt;
+    display:flex;
+    position:relative;
+    padding: 8px;
+    margin: 3px 10px;
+    width:100%;
+    border-radius: 5px;
+    border-color: black;
+}
+
+#blurDiv1, #blurDiv2{
+    display:none;
+    backdrop-filter: blur(3px);
+    position:fixed;
+    width:100%;
+    height:100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#popupDiv{
+    display:none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px double black;
+    border-radius: 5px;
+    background-color: white;
+    padding: 20px;
+    
+}
+
+#dungeonTracker{
+    display:block;
+    visibility: hidden;
+    position:fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 5px double black;
+    border-radius: 5px;
+    background-color: white;
+    padding: 20px;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 93%;
+    min-width: 720px;
+}
+
+.stopScrolling{
+    overflow: hidden;
+}
+
+#inventory{
+    display:none;
+}

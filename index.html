@@ -4,17 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>OOT/OOTMM/AP Spoiler Log to Checklist</title>
+    <title>Spoiler Log Tracker OOT/OOTMM/AP</title> 
     <meta X-Content-Type-Options: nosniff>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-    <link rel="stylesheet" href="mystyle.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="queries.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-
-    <script crossorigin src="logic/items.js" type="module"></script>
-    <script type="module" crossorigin src="logic/functions.js"></script>
 
 </head>
 
@@ -24,14 +22,16 @@
         <div id="titleDiv">
             <h1>Fridge's Spoiler Log Tracker</h1>
         </div>
-        <div id="inputDiv">
-            <label for="inputfile" class="label">Upload Your AP/OOTR/OOTMM/SoH Spoiler Log</label>
-            <input type="file" name="inputfile" id="inputfile" value="" class="hide">
-            <input type="button" value="Browse..." id="inputButton" onclick="document.getElementById('inputfile').click();" />
+        <div id="infoDiv">
+            <div id="inputDiv">
+                <label for="inputfile" class="label">Upload Your AP/OOTR/OOTMM/SoH Spoiler Log</label>
+                <input type="file" name="inputfile" id="inputfile" value="" class="hide">
+                <input type="button" value="Browse..." id="inputButton" onclick="document.getElementById('inputfile').click();" />
+            </div>
+            <div id="errorDiv"></div>
+            <div id="seedDiv"></div>
+            <div id="randoDet"></div>
         </div>
-        <div id="errorDiv"></div>
-        <div id="infoDiv"></div>
-        <div id="randoDet"></div>
     </div>
     
     <hr>
@@ -66,14 +66,8 @@
     <div id="blurDiv2" onclick="toggleDungeonTracker()"></div>
     <div id="dungeonTracker" onclick=""></div>
     
-    
-
-    
-    
 
     <script>
-        //import { items } from "logic/items.js";
-        //import * as requirements from "logic/functions.js";
 
         window.onload = function(){
             document.getElementById('searchInput').value = '';
@@ -125,6 +119,7 @@
                     localCopy = localCopy.slice(pos);
                     getStarterItems(fr.result);
                     randomDungeonOptions = getRandomizedDungeons(fr.result);
+                    
                 }
                 else if(localCopy.search("\"locations") != -1){
                     randoVersion = "OOTSHIP";
@@ -159,14 +154,15 @@
                 }
                 else{
                     document.getElementById("errorDiv").innerText = "Invalid File Uploaded";
-                    document.getElementById("infoDiv").innerHTML = "";
+                    document.getElementById("seedDiv").innerHTML = "";
                     return;
                 }
-                console.log(seed);
+                console.log("seed: " + seed);
 
                 
                 buildTable(localCopy, randoVersion, seed);
                 buildDungeonTracker(randoVersion, randomDungeonOptions);
+                setRandomizedSkulls(fr.result);
             }
             fr.readAsText(file.files[0]);
         }
@@ -174,10 +170,10 @@
         function buildTable(localCopy, randoVersion, seed){
 
             document.getElementById("randoDet").innerHTML = `<h3>Version: ${randoVersion} </h3>`;
-            document.getElementById("infoDiv").innerHTML = `<p>${seed}</p>`;
+            document.getElementById("seedDiv").innerHTML = `<p>${seed}</p>`;
             document.getElementById("errorDiv").innerText = "";
     
-            console.log(randoVersion);
+            console.log("Rando detected: " + randoVersion);
             let locationArray = [];
             let itemArray = [];
             let combineSplits = "";
@@ -194,6 +190,7 @@
                     splitedLine = line.split(/:(.*)/s);
                 }
                 
+                //Ship checks to reformat ice traps and shop items
                 if(splitedLine[0].trim() != "\"model\"" && splitedLine[0].trim() != "\"trickName\"" && splitedLine[0].trim() != "\"price\""){
                     locationArray.push(splitedLine[0]);
                     itemArray.push(splitedLine[1]);
@@ -211,7 +208,6 @@
             document.getElementById("tableDiv").appendChild(x);
 
             for (let i=0; i<locationArray.length; i++){
-                //console.log(locationArray[i]);
                 let newRow = document.createElement("TR");
                 newRow.classList.add("spoilerLogRow");
                 let appendBinary = true;
@@ -256,7 +252,6 @@
 
                 if (randoVersion == "OOTSHIP"){
                     if (locationArray[i] == "item"){
-                        //console.log(itemArray[i]);
                         if (itemArray[i].includes("Ice Trap")){
                             document.getElementById(("item"+(i-1)).toString()).innerHTML = `<a href='javascript:void(0)' id='itemLink-${i-1}' onclick='linkClicked(this.id)'><p>Ice Trap</p></a>`;
                             document.getElementById(("item"+(i-1)).toString()).classList.add("itemsHidden");
@@ -307,6 +302,22 @@
                         newCell1.classList.add("locationHeader");
                         group = locationArray[i].trim().split(/\s(?!.*\s.*)/s)[0];
                         group = group.replaceAll(" ", "_");
+                        group = group.replaceAll("\'", "");
+
+                        if (randoVersion == "OOTMM"){
+                           let startPos = locationArray[i].indexOf('(') + 1;
+                            let endPos = locationArray[i].indexOf(')');
+                            newCell1.innerHTML = locationArray[i].slice(0, startPos) + `<span id='headerCount-${group}' class='locationHeader headerCount ${group}'>0</span>/`;
+                            newCell1.innerHTML += `<span id='headerTotal-${group}' class='locationHeader headerTotal'>` + locationArray[i].slice(startPos, endPos) + "</span>" + ")";
+                            
+                            if(group == "Location_List"){
+                                newCell1.innerHTML = locationArray[i].slice(0, startPos);
+                                newCell1.innerHTML += `<span id='headerCount-${group}' class='locationHeader headerCount ${group}'>0</span>/`;
+                                newCell1.innerHTML += `<span id='headerTotal-${group}' class='locationHeader headerTotal'>` + locationArray[i].slice(startPos, endPos) +  "</span>" + ") "; 
+                                newCell1.innerHTML += "<span id='checksPercent'>0.0</span>%";
+                            } 
+                        }
+                        
                     }
                     newCell2.classList.add("itemsNull");
                 }
@@ -338,25 +349,83 @@
                 y.classList.add("itemsRevealed");
                 y.classList.remove("itemsHidden");
                 handleInventory(y.innerText, "add");
+                checkCounter(x, "add");
             }
             else if(y.classList.contains("itemsRevealed")){
                 y.classList.add("itemsHidden");
                 y.classList.remove("itemsRevealed");
                 handleInventory(y.innerText, "remove");
+                checkCounter(x, "subtract");
             }
+        }
+
+        function checkCounter(id, state){ //state can be add or subtract
+            if(document.getElementById("location"+id) == null){
+                return;
+            }
+
+            if(document.getElementById("randoDet").innerText != "Version: OOTMM"){
+                return;
+            }
+
+            if(state == "reset"){
+                let headerCounterGroup = document.querySelectorAll("span.headerCount");
+                for(let i = 0; i < headerCounterGroup.length; i++){
+                    headerCounterGroup[i].innerText = 0;
+                }
+                document.getElementById("checksPercent").innerText = 0.0;
+                return;
+            }
+
+            if(state == "revealAll"){
+                let headerCounterGroup = document.querySelectorAll("span.headerCount");
+                
+                for(let i = 0; i < headerCounterGroup.length; i++){
+                    let id = "headerTotal-" + headerCounterGroup[i].classList[(headerCounterGroup[i].classList.length - 1)];
+                    //console.log(id);
+                    headerCounterGroup[i].innerText = document.getElementById(id).innerText;
+                }
+                document.getElementById("checksPercent").innerText = 100.0;
+                return;
+            }
+
+            let location = document.getElementById("location"+id);
+            let locationClassName = location.classList[(location.classList.length - 1)];
+            let globalCounter = document.getElementById(`headerCount-Location_List`);
+            let counter = document.getElementById(`headerCount-${locationClassName}`);
+
+            if(state == "add"){
+                counter.innerText = parseInt(counter.innerText, 10) + 1;
+                globalCounter.innerText = parseInt(globalCounter.innerText, 10) + 1;
+            }
+            if(state =="subtract"){
+                counter.innerText = parseInt(counter.innerText, 10) - 1;
+                globalCounter.innerText = parseInt(globalCounter.innerText, 10) - 1;
+            }
+            
+            let checksComplete = parseInt(globalCounter.innerText, 10);
+
+            let startPos = document.getElementById(`location0`).innerText.indexOf('/') + 1;
+            let endPos = document.getElementById(`location0`).innerText.indexOf(')');
+
+            let checksTotal = parseInt(document.getElementById(`location0`).innerText.slice(startPos, endPos), 10);
+
+            document.getElementById("checksPercent").innerText = (((checksComplete / checksTotal)*100).toFixed(1));
 
         }
 
         function revealAll(){
             let x = document.getElementsByClassName("itemsHidden");
-            while(x.item(0) != undefined){
+            while(x.item(0) != undefined || x.item(0) != null){
                 x.item(0).classList.add("itemsRevealed");
                 x.item(0).classList.remove("itemsHidden");
             }
+            checkCounter(0, "revealAll");
         }
 
         function hideAll(){
-            let x = document.getElementsByClassName("itemsRevealed");        
+            let x = document.getElementsByClassName("itemsRevealed"); 
+            checkCounter(0, "reset");       
             while(x.item(0) != undefined){
                 x.item(0).classList.add("itemsHidden");
                 x.item(0).classList.remove("itemsRevealed");
@@ -382,22 +451,29 @@
                 return;
             }
             else{
-                //console.log(searchText);
                 let displayRow = true;
                 let locationClassName = "";
+                let nfLocationClassName = "";
                 let rows = document.getElementsByClassName("spoilerLogRow");
                 let locations = document.getElementsByClassName("locations");
-                console.log(locations.length);
                 for(let i=0; i<locations.length; i++){
                     displayRow = true;
-                    locationClassName = locations[i].classList[(locations[i].classList.length - 1)].toLowerCase();
+                    //non formatted class name to compare against actual class names
+                    nfLocationClassName = locations[i].classList[(locations[i].classList.length - 1)];
+                    //class name to search
+                    locationClassName = nfLocationClassName.toLowerCase();
 
                     searchText.forEach((el) => {
                         if (!locations[i].innerText.toLowerCase().includes(el) && !locationClassName.includes(el)){
-                            //console.log("inside if statement");
                             displayRow = false;
-                            if(locations[i].classList.contains("locationHeader")){
+                            if(nfLocationClassName == "Location_List"){
                                 displayRow = true;
+                            }
+                        }
+                        else{
+                            //only OOTMM has more than 1 header so its just an OOTMM check without passing more variables
+                            if(document.getElementsByClassName("locationHeader").length > 1){
+                                document.querySelector('.locationHeader.' + nfLocationClassName).parentElement.style.display = "";
                             }
                         }
                     });
@@ -415,7 +491,7 @@
         function saveSpoilerState(){
             let localFile1 = [];
             let localFile2 = [];
-            let seed = document.getElementById("infoDiv").innerText;
+            let seed = document.getElementById("seedDiv").innerText;
             let x = document.querySelectorAll("td.items");
             for(i=0; i<x.length; i++){
                 if (x[i].classList.contains("itemsHidden")){
@@ -432,11 +508,8 @@
             let rs = document.querySelectorAll("select.rewardSelect");
             let sc = document.querySelectorAll("input.bossSoulCheckbox");
 
-            console.log(ds);
-
             //recording the indexes
             for(let i=0; i < ds.length; i++){
-                //console.log(ds[i].id);
                 localFile2.push(ds[i].selectedIndex);
             }
             for(let i=0; i < bs.length; i++){
@@ -454,11 +527,13 @@
         }
 
         function loadSpoilerState(){
-            let seed = document.getElementById("infoDiv").innerText;
+            let seed = document.getElementById("seedDiv").innerText;
             let spoilerState = JSON.parse(localStorage.getItem(seed+"-items"));
             if (spoilerState === null){
                 return;
             }
+            checkCounter(0, "reset");
+            let id = "";
             let x = document.getElementsByClassName("items");
             for(let i=0; i<x.length; i++){
                 if(spoilerState[i] == 0){
@@ -468,9 +543,14 @@
                     }
                 }
                 else if(spoilerState[i] == 1){
+                    //handles the check counter from load
+                    id = x[i].id.substr(4);
+                    checkCounter(id, "add");
+
                     if(!x[i].classList.contains("itemsRevealed")){
                         x[i].classList.add("itemsRevealed");
                         x[i].classList.remove("itemsHidden");
+                        
                     }
                 }
                 else{
@@ -519,6 +599,65 @@
             // ^^^
         }
 
+        function setRandomizedSkulls(log){
+
+            /*
+                goldSkulltulaTokens: none = -100 checks
+                goldSkulltulaTokens: dungeon = -56 checks
+                goldSkulltulaTokens: overworld = -44 checks
+                goldSkulltulaTokens: all = -0 checks
+                housesSkulltulaTokens: none = -60 checks
+                housesSkulltulaTokens: cross = -0 checks
+                housesSkulltulaTokens: all = -0 checks
+
+            */
+
+            if(document.getElementById("randoDet").innerText != "Version: OOTMM"){
+                return;
+            }
+
+            const searchParameters = ["goldSkulltulaTokens", "housesSkulltulaTokens"];
+            
+            let skullOptions = {};
+
+            let x = 0;
+
+            for(let i = 0; i < searchParameters.length; i++){
+                let startPos = log.search(searchParameters[i]);
+                let endPos = log.indexOf("\n", startPos); /// THIS SOLVES THE LOOKING FOR END OF LINE PROBLEM !!!
+
+                x = log.slice(startPos, endPos).trim();
+                
+                let y = x.split(":");
+                Object.defineProperty(skullOptions, y[0], {value:y[1].trim()});
+                  
+            }
+
+            let removeLocationsInt = 0;
+
+            switch (skullOptions.goldSkulltulaTokens) {
+                case "none":
+                    removeLocationsInt += 100;
+                    break;
+
+                case "dungeon":
+                    removeLocationsInt += 56;
+                    break;
+
+                case "overworld":
+                removeLocationsInt += 44;
+                    break; 
+            }
+
+            if(skullOptions.housesSkulltulaTokens == "none"){
+                removeLocationsInt += 60;
+            }
+
+            document.getElementById("headerTotal-Location_List").innerText = parseInt(document.getElementById("headerTotal-Location_List").innerText, 10) - removeLocationsInt;
+
+
+        }
+
         function getRandomizedDungeons(log){
             /*
             erBoss: none/own game/full
@@ -550,7 +689,6 @@
                 let endPos = log.indexOf("\n", startPos); /// THIS SOLVES THE LOOKING FOR END OF LINE PROBLEM !!!
 
                 x = log.slice(startPos, endPos).trim();
-                //console.log(x);
                 
                 let y = x.split(":");
                 Object.defineProperty(dungeonOptions, y[0], {value:y[1].trim()});
@@ -816,7 +954,6 @@
                         document.getElementById(elid).hidden = false;
 
                         if(document.getElementsByClassName("bossSoulCheckbox").length > 0){
-                            //console.log(document.getElementsByClassName("bossSoulCheckbox"));
                             document.getElementById(`bossSoul${x}`).disabled = false;
                         }
 
@@ -901,6 +1038,7 @@
                 line = line.trim();
                 startItemArray.push(line);
             })
+            console.log("starting inventory items:");
             console.log(startItemArray);
             for(let i=0; i<startItemArray.length; i++){
                 a = startItemArray[i].split(/:(?!.*:.*)/s); //removes everything after the colon
@@ -1006,7 +1144,6 @@
                     }
                 }
             }
-            //console.log(items);
             displayInventory();
         }        
 

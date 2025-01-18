@@ -1,0 +1,55 @@
+@media only screen and (max-width: 1000px) {
+    #buttonDiv{
+        display: inline-flex;
+        width:100%;
+        float: none;
+        background-color: white;
+        top: 0;
+        padding: 10px 0;
+        margin: 0;
+    }
+
+    .button{
+        padding: 2%;
+        font-size: min(3vw, 12pt);
+    }
+
+    #tableDiv table{
+        width: 100%;        
+    }
+
+    #searchInput{
+        font-size: min(3vw, 12pt);
+    }
+
+    #dungeonTracker{
+        min-width: 400px;
+    }
+    select{
+        width: 100%;
+        font-size: min(2vw, 12pt);
+    }
+  }
+
+  @media only screen and (max-width: 750px){
+    #seedDiv{
+        visibility:collapse;
+    }
+
+    #infoDiv{
+        display:grid;
+        width:100%;
+        grid-template-columns: minmax(210px, 50%) minmax(110px, 50%);
+    }
+    
+    #randoDet{
+        display: grid;
+        text-align: right;
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .items, .locations, .headerCount, .headerTotal{
+        font-size: min(2vw, 11pt);
+    }
+  }
