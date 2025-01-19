@@ -250,6 +250,10 @@ a:visited {
     min-width: 720px;
 }
 
+#dungeonTrackerButton2{
+    width:100%;
+}
+
 .stopScrolling{
     overflow: hidden;
 }

@@ -5,13 +5,13 @@
         float: none;
         background-color: white;
         top: 0;
-        padding: 10px 0;
+        padding: 10px;
         margin: 0;
     }
 
     .button{
         padding: 2%;
-        font-size: min(3vw, 12pt);
+        font-size: min(3vw, 14pt);
     }
 
     #tableDiv table{
@@ -23,11 +23,25 @@
     }
 
     #dungeonTracker{
-        min-width: 400px;
+        min-width:300px;
+        width:85%;
     }
     select{
         width: 100%;
         font-size: min(2vw, 12pt);
+    }
+
+    .items, .locations{
+        overflow:visible;
+        font-size: min(3vw, 12pt);
+        
+    }
+    p{
+        height: auto;
+        line-height:normal;
+    }
+    .locations a:hover{
+        font-weight: normal;
     }
   }
 
@@ -49,7 +63,16 @@
         grid-row: 1;
     }
 
-    .items, .locations, .headerCount, .headerTotal{
-        font-size: min(2vw, 11pt);
+    .items, .locations {
+        font-size: min(3vw, 12pt);
     }
+
+    .locationHeader, .headerCount, .headerTotal{
+        font-size: min(3.2vw, 14pt);
+    }
+
+    .locations{
+        width: 66%;
+    }
+
   }

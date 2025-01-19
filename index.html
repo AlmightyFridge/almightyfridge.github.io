@@ -64,8 +64,9 @@
     </div>
 
     <div id="blurDiv2" onclick="toggleDungeonTracker()"></div>
-    <div id="dungeonTracker" onclick=""></div>
-    
+    <div id="dungeonTracker" onclick="">
+        <input type="button" id="dungeonTrackerButton2" class="button" value="Close" onclick="toggleDungeonTracker()"> 
+    </div>
 
     <script>
 
@@ -860,7 +861,7 @@
                 
                 newTable.appendChild(newRow);
             }
-            document.getElementById("dungeonTracker").appendChild(newTable);
+            document.getElementById("dungeonTracker").prepend(newTable);
 
         }
 
