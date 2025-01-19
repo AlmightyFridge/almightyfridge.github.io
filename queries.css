@@ -36,6 +36,11 @@
         font-size: min(3vw, 12pt);
         
     }
+
+    .locationHeader, .headerCount, .headerTotal{
+        font-size: min(3.2vw, 14pt);
+    }
+    
     p{
         height: auto;
         line-height:normal;
