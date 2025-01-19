@@ -112,6 +112,7 @@ a:visited {
     min-width: 210px;
     grid-column: 1;
     grid-row: 1;
+    max-height: 120px;
 }
 
 #inputButton{
@@ -120,7 +121,8 @@ a:visited {
     padding: 16px;
     font-size: 14pt;
     margin: 2px;
-    width: 200px;
+    width: 80%;
+    height: 60px;
     justify-self: center;
 }
 
@@ -134,6 +136,7 @@ a:visited {
     display:grid;
     width:100%;
     grid-template-columns: minmax(210px, 20%) minmax(280px, 60%) minmax(110px, 20%);
+    height: 108px;
 }
 
 #errorDiv, #seedDiv{
