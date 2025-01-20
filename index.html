@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Spoiler Log Tracker OOT/OOTMM/AP</title> 
     <meta X-Content-Type-Options: nosniff>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="queries.css">
@@ -18,10 +18,17 @@
 
 <body>
 
-    <div id="HeaderDiv"> 
+    <div id="headerDiv"> 
         <div id="titleDiv">
             <h1>Fridge's Spoiler Log Tracker</h1>
         </div>
+        <button id="darkMode" class="darkModeButton" title="Toggle Dark Mode" onclick="toggleDarkMode();">
+            <img src="icons/theme-light-dark.svg">
+        </button>
+        <button id="fullscreenButton" class="fullscreenButton" title="Toggle Fullscreen" onclick="toggleFullscreen();">
+            <img src="icons/expand-arrows.svg">
+        </button>
+
         <div id="infoDiv">
             <div id="inputDiv">
                 <label for="inputfile" class="label">Upload Your AP/OOTR/OOTMM/SoH Spoiler Log</label>
@@ -64,7 +71,7 @@
     </div>
 
     <div id="blurDiv2" onclick="toggleDungeonTracker()"></div>
-    <div id="dungeonTracker" onclick="">
+    <div id="dungeonTracker" class="dungeonTracker">
         <input type="button" id="dungeonTrackerButton2" class="button" value="Close" onclick="toggleDungeonTracker()"> 
     </div>
 
@@ -331,7 +338,11 @@
                     if(randoVersion == "OOTMM" && !removeBinary){
                         newCell1.classList.add(group);
                     }
-                    newCell2.innerHTML = `<a href='javascript:void(0)' id='itemLink-${i}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`
+                    if(document.body.classList.contains("darkmode")){
+                        newCell1.classList.add("darkmode");
+                        newCell2.classList.add("darkmode");
+                    }
+                    newCell2.innerHTML = `<a href='javascript:void(0)' id='itemLink-${i}' onclick='linkClicked(this.id)'><p>${itemArray[i]}</p></a>`;
                     document.getElementById("row"+i).appendChild(newCell1);
                     document.getElementById("row"+i).appendChild(newCell2);
                 }
@@ -382,7 +393,7 @@
                 let headerCounterGroup = document.querySelectorAll("span.headerCount");
                 
                 for(let i = 0; i < headerCounterGroup.length; i++){
-                    let id = "headerTotal-" + headerCounterGroup[i].classList[(headerCounterGroup[i].classList.length - 1)];
+                    let id = "headerTotal-" + headerCounterGroup[i].classList[2];
                     //console.log(id);
                     headerCounterGroup[i].innerText = document.getElementById(id).innerText;
                 }
@@ -391,7 +402,7 @@
             }
 
             let location = document.getElementById("location"+id);
-            let locationClassName = location.classList[(location.classList.length - 1)];
+            let locationClassName = location.classList[1];
             let globalCounter = document.getElementById(`headerCount-Location_List`);
             let counter = document.getElementById(`headerCount-${locationClassName}`);
 
@@ -598,6 +609,46 @@
                 }
             }
             // ^^^
+        }
+
+        function toggleDarkMode(){
+
+            document.getElementById("errorDiv").innerText = "";
+
+                let darkModeElems1 = document.querySelectorAll("body, .locations, .items, #dungeonTracker");
+                let darkModeElems2 = document.querySelectorAll("input, button");
+                //console.log(darkModeElems);
+                for(let i = 0; i<darkModeElems1.length; i++){
+                    document.querySelectorAll("body, .locations, .items, #dungeonTracker")[i].classList.toggle("darkmode");
+                }
+                for(let i = 0; i<darkModeElems2.length; i++){
+                    document.querySelectorAll("input, button")[i].classList.toggle("darkmode2");
+                }
+
+            
+            
+        }
+
+        function toggleFullscreen(){
+            
+            if(document.fullscreenElement == null){
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) { /* IE11 */
+                    document.documentElement.msRequestFullscreen();
+                }
+            }
+            else if(document.fullscreenElement != null){
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (documentwebkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE11 */
+                    document.msExitFullscreen();
+                }
+            }
         }
 
         function setRandomizedSkulls(log){

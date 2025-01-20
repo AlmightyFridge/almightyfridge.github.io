@@ -8,7 +8,7 @@
         display: inline-flex;
         width:100%;
         float: none;
-        background-color: white;
+        background-color: inherit;
         top: 0;
         padding: 0px;
         margin: 0;
@@ -84,6 +84,24 @@
 
     .locations{
         width: 66%;
+    }
+
+    .darkModeButton{
+        top: 150px;
+
+    }
+    
+    .fullscreenButton{
+        top: 150px;
+
+    }
+
+    #titleDiv h1{
+        font-size: min(5vw, 2em)
+    }
+
+    #headerDiv{
+        height: 194px;
     }
 
   }

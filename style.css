@@ -2,6 +2,27 @@
 
 body{
     font-family: "Open Sans", sans-serif;
+    color:black;
+}
+
+.darkModeButton{
+    display:inline-block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 6px;
+    height:40px;
+    width:40px;
+}
+
+.fullscreenButton{
+    display:inline-block;
+    position: absolute;
+    top: 5px;
+    right: 55px;
+    padding: 6px;
+    height:40px;
+    width:40px;
 }
 
 td a{
@@ -15,6 +36,7 @@ p{
     height:29px;
     margin:0;
     line-height:36px;
+    color:inherit;
 }
 
 tr{
@@ -36,7 +58,6 @@ tr{
 
 .items, .locations{
     border-bottom: 1px solid black;
-
 }
 
 .locations{
@@ -44,15 +65,11 @@ tr{
 }
 
 .locations a:link {
-    color: black;
+    color: inherit;
     text-decoration:none;
 }
 .locations a:hover {
     font-weight: bold;
-}
-
-a:visited {
-    color: black
 }
 
 .itemsRevealed{
@@ -60,10 +77,11 @@ a:visited {
 }
 
 .itemsRevealed, .itemsRevealed a:visited, .itemsRevealed a:link {
-    background-color: white;
-    color: black;
     text-decoration:none;
-    
+}
+
+.items a:link{
+    color: inherit;
 }
 
 .itemsNull{
@@ -74,19 +92,18 @@ a:visited {
     display: none;
 }
 
-.locationHeader, .locationHeader a:hover{
+.locationHeader{
     font-size:14pt;
     font-weight:bold;
     height: 36px;
     border-style:none;
     line-height:50px;
-    color:black;
     display:inline;
     
 
 }
 
-#HeaderDiv{
+#headerDiv{
     position:relative;
     margin: 20px;
     display:flex;
@@ -146,7 +163,6 @@ a:visited {
     margin: 10px;
     grid-column: 2;
     grid-row: 1;
-    word-break: break-all;
 
 }
 
@@ -154,6 +170,7 @@ a:visited {
     line-height: 20px;
     display: grid;
     justify-content: center;
+    word-break: break-all;
 }
 
 #randoDet{
@@ -233,19 +250,20 @@ a:visited {
     border-radius: 5px;
     background-color: white;
     padding: 20px;
-    
+    color:black;
 }
 
-#dungeonTracker{
+.dungeonTracker{
     display:block;
     visibility: hidden;
     position:fixed; 
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: 5px double black;
-    border-radius: 5px;
     background-color: white;
+    border: 5px double;
+    border-color:inherit;
+    border-radius: 5px;
     padding: 20px;
     overflow-y:scroll;
     overflow-x:hidden;
@@ -255,6 +273,21 @@ a:visited {
 
 #dungeonTrackerButton2{
     width:100%;
+}
+
+.darkmode{
+    background-color: #121212;
+    color: rgba(255, 255, 255, 0.877);
+    border-color: white; 
+}
+
+.darkmode2{
+    background-color: #bdbdbd;
+    border-radius: 5px;
+}
+
+.itemsHidden.darkmode{
+    color: black;
 }
 
 .stopScrolling{
