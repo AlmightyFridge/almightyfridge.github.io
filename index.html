@@ -743,6 +743,15 @@
                 x = log.slice(startPos, endPos).trim();
                 
                 let y = x.split(":");
+                console.log(startPos);
+                if(searchParameters[i] == "erPirateFortress" && startPos == -1){
+                    startPos = log.search("erPiratesWorld");
+                    endPos = log.indexOf("\n", startPos);
+                    x = log.slice(startPos, endPos).trim();
+                    
+                    y = x.split(":");
+                    console.log(y);
+                }
                 Object.defineProperty(dungeonOptions, y[0], {value:y[1].trim()});
                   
             }
