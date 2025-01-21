@@ -50,6 +50,11 @@
         <input type="button" id="saveButton" class="button" value="Save" onclick="saveSpoilerState()">
         <input type="button" id="loadButton" class="button" value="Load" onclick="loadSpoilerState()">
         <input type="button" id="dungeonTrackerButton" class="button" value="Dungeons" onclick="toggleDungeonTracker()">
+        <div>
+            <input type="checkbox" id="autosaveCheckbox" class="checkbox">
+            <label for="autosaveCheckbox">Auto-Save</label>
+        </div>
+        
         <input type="text" id="searchInput" placeholder="Find Locations" onkeyup="this.onchange()" onchange="searchLocations(this.value)">
         <div id="inventory"></div>
         
@@ -369,6 +374,9 @@
                 handleInventory(y.innerText, "remove");
                 checkCounter(x, "subtract");
             }
+            if(document.getElementById("autosaveCheckbox").checked){
+                saveSpoilerState();
+            }
         }
 
         function checkCounter(id, state){ //state can be add or subtract
@@ -394,7 +402,6 @@
                 
                 for(let i = 0; i < headerCounterGroup.length; i++){
                     let id = "headerTotal-" + headerCounterGroup[i].classList[2];
-                    //console.log(id);
                     headerCounterGroup[i].innerText = document.getElementById(id).innerText;
                 }
                 document.getElementById("checksPercent").innerText = 100.0;
@@ -463,39 +470,42 @@
                 return;
             }
             else{
-                let displayRow = true;
+                let displayRow = false;
                 let locationClassName = "";
                 let nfLocationClassName = "";
+                let searchCounter = 0;
                 let rows = document.getElementsByClassName("spoilerLogRow");
                 let locations = document.getElementsByClassName("locations");
                 for(let i=0; i<locations.length; i++){
-                    displayRow = true;
+                    displayRow = false;
+                    searchCounter = 0;
                     //non formatted class name to compare against actual class names
-                    nfLocationClassName = locations[i].classList[(locations[i].classList.length - 1)];
+                    nfLocationClassName = locations[i].classList[1];
                     //class name to search
                     locationClassName = nfLocationClassName.toLowerCase();
 
                     searchText.forEach((el) => {
-                        if (!locations[i].innerText.toLowerCase().includes(el) && !locationClassName.includes(el)){
-                            displayRow = false;
-                            if(nfLocationClassName == "Location_List"){
-                                displayRow = true;
-                            }
-                        }
-                        else{
-                            //only OOTMM has more than 1 header so its just an OOTMM check without passing more variables
-                            if(document.getElementsByClassName("locationHeader").length > 1){
-                                document.querySelector('.locationHeader.' + nfLocationClassName).parentElement.style.display = "";
-                            }
+                        // need all search term to either match the location name or the locations class name
+                        if (locations[i].innerText.toLowerCase().includes(el) || locationClassName.includes(el)){
+                            searchCounter++;
                         }
                     });
 
-                    if(displayRow){
-                        rows[i].style.display = "";
+                    if(nfLocationClassName == "Location_List"){
+                        displayRow = true;
                     }
-                    else{
+                    
+                    if(searchCounter == searchText.length || displayRow){
+                        rows[i].style.display = "";
+                        if(document.getElementById("randoDet").innerText == "Version: OOTMM"){
+                            document.querySelector('.locationHeader.' + nfLocationClassName).parentElement.style.display = "";
+                        }
+                    }
+                     else{
                         rows[i].style.display = "none";
                     }
+
+                    
                 }
             }
         }
@@ -617,7 +627,6 @@
 
                 let darkModeElems1 = document.querySelectorAll("body, .locations, .items, #dungeonTracker");
                 let darkModeElems2 = document.querySelectorAll("input, button");
-                //console.log(darkModeElems);
                 for(let i = 0; i<darkModeElems1.length; i++){
                     document.querySelectorAll("body, .locations, .items, #dungeonTracker")[i].classList.toggle("darkmode");
                 }
@@ -743,14 +752,12 @@
                 x = log.slice(startPos, endPos).trim();
                 
                 let y = x.split(":");
-                console.log(startPos);
                 if(searchParameters[i] == "erPirateFortress" && startPos == -1){
                     startPos = log.search("erPiratesWorld");
                     endPos = log.indexOf("\n", startPos);
                     x = log.slice(startPos, endPos).trim();
                     
                     y = x.split(":");
-                    console.log(y);
                 }
                 Object.defineProperty(dungeonOptions, y[0], {value:y[1].trim()});
                   
@@ -999,6 +1006,10 @@
                     }
                 }
             }
+
+            if(document.getElementById("autosaveCheckbox").checked){
+                saveSpoilerState();
+            }
             
             if(state == "dungeon"){
 
@@ -1055,7 +1066,11 @@
                 
                 //updates the options after changing dropdowns to N/A
                 dtOptionsHandler(bossGroup, document.getElementById(`boss${x}`).value, document.getElementById(`boss${x}`).id);
-                dtOptionsHandler(rewardGroup, document.getElementById(`reward${x}`).value, document.getElementById(`reward${x}`).id);            
+                dtOptionsHandler(rewardGroup, document.getElementById(`reward${x}`).value, document.getElementById(`reward${x}`).id);    
+                
+                if(document.getElementById("autosaveCheckbox").checked){
+                    saveSpoilerState();
+                }
             }
         }
 
