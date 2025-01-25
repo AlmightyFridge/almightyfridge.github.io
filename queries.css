@@ -4,11 +4,10 @@
         margin:5px;
     }
 
-    #buttonDiv{
+    .buttonDiv{
         display: inline-flex;
         width:100%;
         float: none;
-        background-color: inherit;
         top: 0;
         padding: 0px;
         margin: 0;
@@ -32,6 +31,7 @@
         width:85vw;
         height:93vh;
     }
+    
     select{
         width: 100%;
         font-size: min(2vw, 12pt);

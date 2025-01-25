@@ -191,7 +191,7 @@ tr{
     
 }
 
-#buttonDiv{
+.buttonDiv{
     display:flex;
     position:sticky;
     flex-wrap:wrap;
@@ -202,7 +202,10 @@ tr{
     width: 18vw;
     justify-content: center;
     min-width: 225px;
+    background-color: white;
 }
+
+
 
 .button{
     display:flex;
@@ -276,7 +279,7 @@ tr{
 }
 
 .darkmode{
-    background-color: #121212;
+    background-color: #121212 !important;
     color: rgba(255, 255, 255, 0.877);
     border-color: white; 
 }
